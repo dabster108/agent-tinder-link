@@ -15,7 +15,7 @@ export function GlassCard({ children, style }: GlassCardProps) {
 
   return (
     <View style={[styles.nativeWrap, style]}>
-      <BlurView tint="dark" intensity={44} style={styles.nativeBlur}>
+      <BlurView tint="light" intensity={48} style={styles.nativeBlur}>
         <View style={styles.nativeOverlay}>{children}</View>
       </BlurView>
     </View>

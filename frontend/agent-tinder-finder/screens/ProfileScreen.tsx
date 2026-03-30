@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: PremiumTheme.surface.border,
-    backgroundColor: "rgba(10, 12, 30, 0.52)",
+    backgroundColor: "rgba(255, 255, 255, 0.84)",
     color: PremiumTheme.text.primary,
     fontFamily: "Inter_500Medium",
     fontSize: 14,

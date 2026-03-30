@@ -40,7 +40,7 @@ function Bubble({ message }: { message: ChatMessage }) {
         colors={[
           PremiumTheme.gradient.electricBlue,
           PremiumTheme.gradient.softViolet,
-          PremiumTheme.gradient.neonPink,
+          PremiumTheme.gradient.softPink,
         ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     borderColor: PremiumTheme.surface.border,
-    backgroundColor: "rgba(10, 12, 30, 0.62)",
+    backgroundColor: "rgba(255, 255, 255, 0.86)",
     paddingHorizontal: 12,
     paddingVertical: 4,
   },

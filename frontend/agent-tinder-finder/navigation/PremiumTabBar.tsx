@@ -1,13 +1,14 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import {
   House,
   MessageCircleMore,
   SearchCheck,
   UserRound,
 } from "lucide-react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -70,7 +71,18 @@ function TabItem({
       }}
       style={[styles.item, animatedStyle]}
     >
-      <Animated.View style={[styles.activePill, activeStyle]} />
+      <Animated.View style={[styles.activePill, activeStyle]}>
+        <LinearGradient
+          colors={[
+            "rgba(116, 184, 255, 0.42)",
+            "rgba(200, 207, 255, 0.45)",
+            "rgba(255, 215, 236, 0.48)",
+          ]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </Animated.View>
       <Icon
         color={active ? PremiumTheme.text.primary : PremiumTheme.text.muted}
         size={18}
@@ -80,18 +92,14 @@ function TabItem({
   );
 }
 
-export function PremiumTabBar({
-  state,
-  descriptors,
-  navigation,
-}: BottomTabBarProps) {
+export function PremiumTabBar({ state, navigation }: BottomTabBarProps) {
   const visibleRoutes = state.routes.filter((route) => tabMeta[route.name]);
 
   return (
     <View style={styles.wrap} pointerEvents="box-none">
-      <BlurView intensity={40} tint="dark" style={styles.navContainer}>
+      <BlurView intensity={36} tint="light" style={styles.navContainer}>
         <View style={styles.navInner}>
-          {visibleRoutes.map((route, index) => {
+          {visibleRoutes.map((route) => {
             const isFocused =
               state.index ===
               state.routes.findIndex((r) => r.key === route.key);
@@ -162,9 +170,9 @@ const styles = StyleSheet.create({
   activePill: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: 16,
-    backgroundColor: "rgba(97, 138, 255, 0.26)",
     borderWidth: 1,
-    borderColor: "rgba(178, 199, 255, 0.45)",
+    borderColor: "rgba(168, 194, 244, 0.54)",
+    overflow: "hidden",
   },
   label: {
     color: PremiumTheme.text.muted,
