@@ -1,94 +1,212 @@
 import React from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import * as Haptics from "expo-haptics";
+import {
+  FlatList,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Animated, { FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+import {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
-import { AppBackground } from "@/components/premium/AppBackground";
-import { GlassCard } from "@/components/premium/GlassCard";
-import { PremiumTheme } from "@/components/premium/theme";
+import {
+  KindraColors,
+  KindraFonts,
+  KindraShadow,
+} from "@/constants/kindraTheme";
 
-type MatchItem = {
+type NewMatch = {
   id: string;
   name: string;
-  age: number;
-  score: number;
-  reason: string;
+  avatar: string;
 };
 
-const mockMatches: MatchItem[] = [
+type Conversation = {
+  id: string;
+  name: string;
+  avatar: string;
+  preview: string;
+  time: string;
+  unread: boolean;
+};
+
+const NEW_MATCHES: NewMatch[] = [
+  { id: "n1", name: "Mira", avatar: "M" },
+  { id: "n2", name: "Rohan", avatar: "R" },
+  { id: "n3", name: "Aanya", avatar: "A" },
+  { id: "n4", name: "Kabir", avatar: "K" },
+  { id: "n5", name: "Sara", avatar: "S" },
+];
+
+const CONVERSATIONS: Conversation[] = [
   {
-    id: "1",
-    name: "Aarav",
-    age: 27,
-    score: 94,
-    reason:
-      "Shared curiosity, deep-focus work style, and balanced communication cadence.",
+    id: "c1",
+    name: "Mira",
+    avatar: "M",
+    preview: "Loved your idea on mindful dating prompts.",
+    time: "2m",
+    unread: true,
   },
   {
-    id: "2",
-    name: "Maya",
-    age: 25,
-    score: 91,
-    reason: "Aligned emotional pacing and similar weekend energy profile.",
+    id: "c2",
+    name: "Rohan",
+    avatar: "R",
+    preview: "Friday coffee still works for me.",
+    time: "15m",
+    unread: false,
   },
   {
-    id: "3",
-    name: "Nikhil",
-    age: 28,
-    score: 89,
-    reason: "Strong values overlap with high conversational reciprocity.",
+    id: "c3",
+    name: "Aanya",
+    avatar: "A",
+    preview: "Your travel stories are actually elite.",
+    time: "1h",
+    unread: true,
+  },
+  {
+    id: "c4",
+    name: "Kabir",
+    avatar: "K",
+    preview: "Want to compare playlists this weekend?",
+    time: "4h",
+    unread: false,
+  },
+  {
+    id: "c5",
+    name: "Sara",
+    avatar: "S",
+    preview: "My agent says we should plan a call.",
+    time: "1d",
+    unread: false,
   },
 ];
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+function ScalePressable({
+  children,
+  style,
+  onPress,
+}: {
+  children: React.ReactNode;
+  style?: object;
+  onPress: () => void;
+}) {
+  const scale = useSharedValue(1);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <AnimatedPressable
+      style={[style, animatedStyle]}
+      onPressIn={() => {
+        scale.value = withSpring(0.96, { damping: 16, stiffness: 320 });
+      }}
+      onPressOut={() => {
+        scale.value = withSpring(1, { damping: 16, stiffness: 320 });
+      }}
+      onPress={onPress}
+    >
+      {children}
+    </AnimatedPressable>
+  );
+}
+
 export default function MatchesScreen() {
+  const onPressItem = React.useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }, []);
+
   return (
     <View style={styles.screen}>
-      <AppBackground />
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        <ScrollView
-          contentContainerStyle={styles.content}
+      <SafeAreaView edges={["top"]} style={styles.safeArea}>
+        <FlatList
+          data={CONVERSATIONS}
+          keyExtractor={(item) => item.id}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-        >
-          <Text style={styles.title}>Matches</Text>
-          <Text style={styles.subtitle}>
-            Tap cards to shortlist or swipe across to explore more.
-          </Text>
+          ListHeaderComponent={
+            <View>
+              <View style={styles.header}>
+                <Text style={styles.headerTitle}>Your Matches</Text>
+                <Text style={styles.headerSubtitle}>3 new connections</Text>
+              </View>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.row}
-          >
-            {mockMatches.map((item, index) => (
-              <Animated.View
-                entering={FadeInUp.delay(120 + index * 80).duration(650)}
-                key={item.id}
+              <View style={styles.topSection}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={styles.newMatchesRow}
+                >
+                  {NEW_MATCHES.map((item, index) => (
+                    <Animated.View
+                      key={item.id}
+                      entering={FadeInDown.delay(80 + index * 70).duration(300)}
+                      style={styles.newMatchItem}
+                    >
+                      <ScalePressable onPress={onPressItem}>
+                        <View style={styles.newAvatarWrap}>
+                          <View style={styles.newBadge}>
+                            <Text style={styles.newBadgeText}>New</Text>
+                          </View>
+                          <View style={styles.newAvatarCore}>
+                            <Text style={styles.newAvatarText}>
+                              {item.avatar}
+                            </Text>
+                          </View>
+                        </View>
+                      </ScalePressable>
+                      <Text style={styles.newMatchName}>{item.name}</Text>
+                    </Animated.View>
+                  ))}
+                </ScrollView>
+              </View>
+            </View>
+          }
+          renderItem={({ item, index }) => (
+            <Animated.View
+              entering={FadeIn.delay(100 + index * 55).duration(280)}
+            >
+              <ScalePressable
+                style={styles.conversationCard}
+                onPress={onPressItem}
               >
-                <Pressable>
-                  <GlassCard style={styles.matchCard}>
-                    <View style={styles.topRow}>
-                      <View style={styles.avatar}>
-                        <Text style={styles.avatarLabel}>
-                          {item.name.slice(0, 1)}
-                        </Text>
-                      </View>
-                      <View>
-                        <Text style={styles.name}>
-                          {item.name}, {item.age}
-                        </Text>
-                        <Text style={styles.score}>
-                          {item.score}% compatible
-                        </Text>
-                      </View>
-                    </View>
-                    <Text style={styles.reasonLabel}>Agent Reasoning</Text>
-                    <Text style={styles.reason}>{item.reason}</Text>
-                  </GlassCard>
-                </Pressable>
-              </Animated.View>
-            ))}
-          </ScrollView>
-        </ScrollView>
+                {item.unread ? <View style={styles.unreadBar} /> : null}
+
+                <View style={styles.rowAvatar}>
+                  <Text style={styles.rowAvatarText}>{item.avatar}</Text>
+                </View>
+
+                <View style={styles.messageCol}>
+                  <Text
+                    style={[styles.nameText, item.unread && styles.nameUnread]}
+                  >
+                    {item.name}
+                  </Text>
+                  <Text style={styles.previewText} numberOfLines={1}>
+                    {item.preview}
+                  </Text>
+                </View>
+
+                <View style={styles.metaCol}>
+                  <Text style={styles.timeText}>{item.time}</Text>
+                  {item.unread ? <View style={styles.unreadDot} /> : null}
+                </View>
+              </ScalePressable>
+            </Animated.View>
+          )}
+          ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+        />
       </SafeAreaView>
     </View>
   );
@@ -97,80 +215,163 @@ export default function MatchesScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+    backgroundColor: KindraColors.background,
   },
   safeArea: {
     flex: 1,
+    backgroundColor: KindraColors.background,
   },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 104,
-    gap: 10,
+  header: {
+    backgroundColor: KindraColors.primaryMid,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    overflow: "hidden",
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 24,
   },
-  title: {
-    color: PremiumTheme.text.primary,
-    fontSize: 30,
-    fontFamily: "Inter_800ExtraBold",
-    letterSpacing: -0.6,
+  headerTitle: {
+    color: KindraColors.white,
+    fontFamily: KindraFonts.heading,
+    fontSize: 26,
   },
-  subtitle: {
-    color: PremiumTheme.text.secondary,
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
-    lineHeight: 21,
-    marginBottom: 6,
+  headerSubtitle: {
+    marginTop: 4,
+    color: KindraColors.primaryLight,
+    fontFamily: KindraFonts.body,
+    fontSize: 13,
   },
-  row: {
-    gap: 12,
-    paddingRight: 18,
+  topSection: {
+    marginTop: 14,
+    paddingHorizontal: 16,
   },
-  matchCard: {
-    width: 290,
-    minHeight: 220,
-    gap: 12,
+  newMatchesRow: {
+    paddingRight: 8,
+    gap: 14,
   },
-  topRow: {
-    flexDirection: "row",
+  newMatchItem: {
+    width: 74,
     alignItems: "center",
-    gap: 10,
+    gap: 8,
   },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  newAvatarWrap: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    borderWidth: 2,
+    borderColor: KindraColors.accent,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(116, 146, 255, 0.22)",
+    backgroundColor: KindraColors.white,
+    ...KindraShadow,
+  },
+  newAvatarCore: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: KindraColors.primaryLight,
+  },
+  newAvatarText: {
+    color: KindraColors.primary,
+    fontFamily: KindraFonts.heading,
+    fontSize: 28,
+  },
+  newMatchName: {
+    color: KindraColors.textSecondary,
+    fontFamily: KindraFonts.body,
+    fontSize: 11,
+    textAlign: "center",
+  },
+  newBadge: {
+    position: "absolute",
+    top: -7,
+    right: -8,
+    backgroundColor: KindraColors.accent,
+    borderRadius: 30,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    zIndex: 2,
+  },
+  newBadgeText: {
+    color: KindraColors.white,
+    fontFamily: KindraFonts.bodyBold,
+    fontSize: 9,
+  },
+  listContent: {
+    paddingBottom: 116,
+    paddingTop: 16,
+    paddingHorizontal: 16,
+  },
+  conversationCard: {
+    backgroundColor: KindraColors.card,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: PremiumTheme.surface.border,
+    borderColor: KindraColors.border,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    ...KindraShadow,
+    position: "relative",
   },
-  avatarLabel: {
-    color: PremiumTheme.text.primary,
-    fontFamily: "Inter_700Bold",
-    fontSize: 18,
+  unreadBar: {
+    position: "absolute",
+    left: 0,
+    top: 10,
+    bottom: 10,
+    width: 3,
+    borderTopRightRadius: 3,
+    borderBottomRightRadius: 3,
+    backgroundColor: KindraColors.primaryMid,
   },
-  name: {
-    color: PremiumTheme.text.primary,
-    fontSize: 18,
-    fontFamily: "Inter_700Bold",
+  rowAvatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: KindraColors.primaryLight,
+    marginRight: 10,
   },
-  score: {
-    color: PremiumTheme.accents.success,
+  rowAvatarText: {
+    color: KindraColors.primary,
+    fontFamily: KindraFonts.heading,
+    fontSize: 24,
+  },
+  messageCol: {
+    flex: 1,
+    gap: 4,
+  },
+  nameText: {
+    color: KindraColors.text,
+    fontFamily: KindraFonts.bodyMedium,
+    fontSize: 15,
+  },
+  nameUnread: {
+    fontFamily: KindraFonts.bodyBold,
+  },
+  previewText: {
+    color: KindraColors.textSecondary,
+    fontFamily: KindraFonts.body,
     fontSize: 13,
-    marginTop: 2,
-    fontFamily: "Inter_600SemiBold",
   },
-  reasonLabel: {
-    color: PremiumTheme.text.muted,
-    fontSize: 12,
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-    fontFamily: "Inter_600SemiBold",
+  metaCol: {
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    minHeight: 36,
   },
-  reason: {
-    color: PremiumTheme.text.secondary,
-    fontSize: 14,
-    lineHeight: 22,
-    fontFamily: "Inter_400Regular",
+  timeText: {
+    color: KindraColors.textMuted,
+    fontFamily: KindraFonts.body,
+    fontSize: 11,
+  },
+  unreadDot: {
+    marginTop: 6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: KindraColors.primaryMid,
   },
 });

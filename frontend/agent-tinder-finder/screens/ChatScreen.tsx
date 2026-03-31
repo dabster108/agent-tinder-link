@@ -1,108 +1,244 @@
-import React from "react";
-import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
-import Animated, { FadeInUp } from "react-native-reanimated";
+import React, { useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import Animated, {
+  Easing,
+  FadeInUp,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 
-import { AppBackground } from "@/components/premium/AppBackground";
-import { GlassCard } from "@/components/premium/GlassCard";
-import { TypingIndicator } from "@/components/premium/TypingIndicator";
-import { PremiumTheme } from "@/components/premium/theme";
+import {
+  KindraColors,
+  KindraFonts,
+  KindraShadow,
+} from "@/constants/kindraTheme";
 
-type ChatMessage = {
+type Message = {
   id: string;
-  content: string;
-  sender: "user" | "other";
+  from: "sent" | "received";
+  text: string;
+  timestamp?: string;
 };
 
-const messages: ChatMessage[] = [
+const MESSAGES: Message[] = [
   {
     id: "1",
-    content: "My agent says we share a love for long runs and ambient music.",
-    sender: "other",
+    from: "received",
+    text: "Hey, your profile feels really grounded and intentional.",
+    timestamp: "Today 10:42 AM",
   },
   {
     id: "2",
-    content: "Same. Mine predicted we would vibe on creative projects too.",
-    sender: "user",
+    from: "sent",
+    text: "Thank you. My agent says we both prioritize calm communication.",
   },
   {
     id: "3",
-    content: "Want to plan a weekend coffee sprint?",
-    sender: "other",
+    from: "received",
+    text: "That tracks. Want to do a short call this week?",
+    timestamp: "Today 10:45 AM",
   },
 ];
 
-function Bubble({ message }: { message: ChatMessage }) {
-  if (message.sender === "user") {
-    return (
-      <LinearGradient
-        colors={[
-          PremiumTheme.gradient.electricBlue,
-          PremiumTheme.gradient.softViolet,
-          PremiumTheme.gradient.softPink,
-        ]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[styles.bubble, styles.userBubble]}
-      >
-        <Text style={styles.userText}>{message.content}</Text>
-      </LinearGradient>
-    );
-  }
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+function ScalePressable({
+  children,
+  style,
+  onPress,
+}: {
+  children: React.ReactNode;
+  style?: object;
+  onPress: () => void;
+}) {
+  const scale = useSharedValue(1);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   return (
-    <View style={[styles.bubble, styles.otherBubble]}>
-      <Text style={styles.otherText}>{message.content}</Text>
+    <AnimatedPressable
+      style={[style, animatedStyle]}
+      onPressIn={() => {
+        scale.value = withSpring(0.96, { damping: 16, stiffness: 320 });
+      }}
+      onPressOut={() => {
+        scale.value = withSpring(1, { damping: 16, stiffness: 320 });
+      }}
+      onPress={onPress}
+    >
+      {children}
+    </AnimatedPressable>
+  );
+}
+
+function Dot({ delay }: { delay: number }) {
+  const progress = useSharedValue(0.4);
+
+  useEffect(() => {
+    progress.value = withRepeat(
+      withDelay(
+        delay,
+        withTiming(1, { duration: 450, easing: Easing.inOut(Easing.quad) }),
+      ),
+      -1,
+      true,
+    );
+  }, [delay, progress]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    transform: [{ scale: 0.7 + progress.value * 0.4 }],
+  }));
+
+  return <Animated.View style={[styles.typingDot, animatedStyle]} />;
+}
+
+function TypingIndicatorBubble() {
+  return (
+    <View style={[styles.bubble, styles.receivedBubble, styles.typingBubble]}>
+      <Text style={styles.typingText}>Agent is thinking...</Text>
+      <View style={styles.typingRow}>
+        <Dot delay={0} />
+        <Dot delay={120} />
+        <Dot delay={240} />
+      </View>
     </View>
   );
 }
 
 export default function ChatScreen() {
+  const insets = useSafeAreaInsets();
+
+  const onPressAny = React.useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }, []);
+
   return (
     <View style={styles.screen}>
-      <AppBackground />
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        <View style={styles.content}>
-          <Text style={styles.title}>Chat</Text>
-          <Text style={styles.subtitle}>
-            Conversation between you, your match, and AI context.
-          </Text>
+      <SafeAreaView edges={["top"]} style={styles.safeArea}>
+        <KeyboardAvoidingView
+          style={styles.flex}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 8 : 0}
+        >
+          <View style={styles.header}>
+            <ScalePressable style={styles.headerIcon} onPress={onPressAny}>
+              <Ionicons
+                name="chevron-back"
+                size={22}
+                color={KindraColors.white}
+              />
+            </ScalePressable>
 
-          <GlassCard style={styles.chatWrap}>
-            <FlatList
-              data={messages}
-              keyExtractor={(item) => item.id}
-              scrollEnabled={false}
-              renderItem={({ item, index }) => (
-                <Animated.View
-                  entering={FadeInUp.delay(100 + index * 70).duration(520)}
+            <View style={styles.headerCenter}>
+              <View style={styles.headerAvatarWrap}>
+                <View style={styles.headerAvatar}>
+                  <Text style={styles.headerAvatarText}>M</Text>
+                </View>
+                <View style={styles.onlineDot} />
+              </View>
+              <Text style={styles.headerName}>Mira</Text>
+            </View>
+
+            <ScalePressable style={styles.headerIcon} onPress={onPressAny}>
+              <Ionicons name="videocam" size={20} color={KindraColors.white} />
+            </ScalePressable>
+          </View>
+
+          <FlatList
+            data={MESSAGES}
+            keyExtractor={(item) => item.id}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.messagesContent}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item, index }) => (
+              <Animated.View
+                entering={FadeInUp.delay(70 + index * 60).duration(270)}
+              >
+                {item.timestamp ? (
+                  <Text style={styles.timestamp}>{item.timestamp}</Text>
+                ) : null}
+
+                <View
                   style={[
                     styles.messageRow,
-                    item.sender === "user" && styles.userRow,
+                    item.from === "sent" ? styles.sentRow : styles.receivedRow,
                   ]}
                 >
-                  <Bubble message={item} />
-                </Animated.View>
-              )}
-              ListFooterComponent={
-                <View style={[styles.messageRow, styles.otherRow]}>
-                  <View style={[styles.bubble, styles.otherBubble]}>
-                    <TypingIndicator />
+                  <View
+                    style={[
+                      styles.bubble,
+                      item.from === "sent"
+                        ? styles.sentBubble
+                        : styles.receivedBubble,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.messageText,
+                        item.from === "sent"
+                          ? styles.sentText
+                          : styles.receivedText,
+                      ]}
+                    >
+                      {item.text}
+                    </Text>
                   </View>
                 </View>
-              }
-            />
-          </GlassCard>
+              </Animated.View>
+            )}
+            ListFooterComponent={
+              <Animated.View entering={FadeInUp.delay(300).duration(260)}>
+                <View style={[styles.messageRow, styles.receivedRow]}>
+                  <TypingIndicatorBubble />
+                </View>
+              </Animated.View>
+            }
+          />
 
-          <View style={styles.inputWrap}>
-            <TextInput
-              placeholder="Type a message"
-              placeholderTextColor={PremiumTheme.text.muted}
-              style={styles.input}
-            />
+          <View
+            style={[
+              styles.inputArea,
+              { paddingBottom: Math.max(insets.bottom, 10) },
+            ]}
+          >
+            <View style={styles.inputRow}>
+              <TextInput
+                placeholder="Write a message"
+                placeholderTextColor={KindraColors.textMuted}
+                style={styles.input}
+              />
+
+              <ScalePressable style={styles.sendButton} onPress={onPressAny}>
+                <Ionicons
+                  name="arrow-up"
+                  size={18}
+                  color={KindraColors.white}
+                />
+              </ScalePressable>
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );
@@ -111,83 +247,172 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+    backgroundColor: KindraColors.background,
   },
   safeArea: {
     flex: 1,
+    backgroundColor: KindraColors.background,
   },
-  content: {
+  flex: {
     flex: 1,
-    paddingHorizontal: 20,
+  },
+  header: {
+    backgroundColor: KindraColors.primary,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    overflow: "hidden",
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  headerIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.18)",
+  },
+  headerCenter: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  headerAvatarWrap: {
+    position: "relative",
+  },
+  headerAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: KindraColors.primaryLight,
+  },
+  headerAvatarText: {
+    color: KindraColors.primary,
+    fontFamily: KindraFonts.heading,
+    fontSize: 22,
+  },
+  onlineDot: {
+    position: "absolute",
+    right: -1,
+    bottom: 0,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: KindraColors.success,
+    borderWidth: 1,
+    borderColor: KindraColors.white,
+  },
+  headerName: {
+    color: KindraColors.white,
+    fontFamily: KindraFonts.heading,
+    fontSize: 18,
+  },
+  messagesContent: {
+    paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 104,
-    gap: 10,
+    paddingBottom: 10,
   },
-  title: {
-    color: PremiumTheme.text.primary,
-    fontSize: 30,
-    fontFamily: "Inter_800ExtraBold",
-    letterSpacing: -0.6,
-  },
-  subtitle: {
-    color: PremiumTheme.text.secondary,
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
-    lineHeight: 20,
-    marginBottom: 6,
-  },
-  chatWrap: {
-    flex: 1,
-    gap: 8,
+  timestamp: {
+    alignSelf: "center",
+    marginBottom: 8,
+    color: KindraColors.textMuted,
+    fontFamily: KindraFonts.body,
+    fontSize: 10,
   },
   messageRow: {
+    marginBottom: 10,
     flexDirection: "row",
-    marginBottom: 8,
   },
-  userRow: {
+  sentRow: {
     justifyContent: "flex-end",
   },
-  otherRow: {
+  receivedRow: {
     justifyContent: "flex-start",
   },
   bubble: {
-    maxWidth: "84%",
+    maxWidth: "82%",
     borderRadius: 18,
-    paddingHorizontal: 12,
+    paddingHorizontal: 13,
     paddingVertical: 10,
   },
-  userBubble: {
-    borderTopRightRadius: 6,
+  sentBubble: {
+    backgroundColor: KindraColors.primaryMid,
+    borderBottomRightRadius: 4,
   },
-  otherBubble: {
-    backgroundColor: "rgba(152, 174, 240, 0.16)",
-    borderWidth: 1,
-    borderColor: PremiumTheme.surface.border,
-    borderTopLeftRadius: 6,
+  receivedBubble: {
+    backgroundColor: KindraColors.card,
+    borderBottomLeftRadius: 4,
+    ...KindraShadow,
   },
-  userText: {
-    color: "#FFFFFF",
+  messageText: {
+    fontFamily: KindraFonts.body,
     fontSize: 14,
     lineHeight: 20,
-    fontFamily: "Inter_500Medium",
   },
-  otherText: {
-    color: PremiumTheme.text.primary,
-    fontSize: 14,
-    lineHeight: 20,
-    fontFamily: "Inter_400Regular",
+  sentText: {
+    color: KindraColors.white,
   },
-  inputWrap: {
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: PremiumTheme.surface.border,
-    backgroundColor: "rgba(255, 255, 255, 0.86)",
+  receivedText: {
+    color: KindraColors.text,
+  },
+  typingBubble: {
+    paddingTop: 10,
+    paddingBottom: 9,
+  },
+  typingText: {
+    color: KindraColors.textSecondary,
+    fontFamily: KindraFonts.body,
+    fontSize: 12,
+  },
+  typingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 7,
+  },
+  typingDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 99,
+    backgroundColor: KindraColors.primaryMid,
+  },
+  inputArea: {
+    borderTopWidth: 1,
+    borderTopColor: KindraColors.border,
+    backgroundColor: KindraColors.white,
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingTop: 12,
+  },
+  inputRow: {
+    backgroundColor: KindraColors.background,
+    borderRadius: 24,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   input: {
-    color: PremiumTheme.text.primary,
-    paddingVertical: 10,
-    fontFamily: "Inter_500Medium",
+    flex: 1,
+    color: KindraColors.text,
+    fontFamily: KindraFonts.body,
     fontSize: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  sendButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: KindraColors.primaryMid,
+    ...KindraShadow,
   },
 });

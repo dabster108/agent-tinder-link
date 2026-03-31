@@ -1,23 +1,23 @@
 import {
-  DarkTheme,
   DefaultTheme,
+  type Theme,
   ThemeProvider,
 } from "@react-navigation/native";
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  Inter_800ExtraBold,
+  DMSans_400Regular,
+  DMSans_500Medium,
+  DMSans_700Bold,
   useFonts,
-} from "@expo-google-fonts/inter";
+} from "@expo-google-fonts/dm-sans";
+import { DMSerifDisplay_400Regular } from "@expo-google-fonts/dm-serif-display";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import "react-native-reanimated";
+import * as SystemUI from "expo-system-ui";
 
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { KindraColors } from "@/constants/kindraTheme";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,14 +25,25 @@ export const unstable_settings = {
   anchor: "(tabs)",
 };
 
+const KindraTheme: Theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: KindraColors.background,
+    card: KindraColors.card,
+    border: KindraColors.border,
+    text: KindraColors.text,
+    primary: KindraColors.primaryMid,
+    notification: KindraColors.accent,
+  },
+};
+
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [fontsLoaded] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-    Inter_800ExtraBold,
+    DMSans_400Regular,
+    DMSans_500Medium,
+    DMSans_700Bold,
+    DMSerifDisplay_400Regular,
   });
 
   useEffect(() => {
@@ -41,12 +52,16 @@ export default function RootLayout() {
     }
   }, [fontsLoaded]);
 
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(KindraColors.background);
+  }, []);
+
   if (!fontsLoaded) {
     return null;
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={KindraTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
@@ -54,7 +69,11 @@ export default function RootLayout() {
           options={{ presentation: "modal", title: "Modal" }}
         />
       </Stack>
-      <StatusBar style="light" />
+      <StatusBar
+        style="dark"
+        translucent={false}
+        backgroundColor={KindraColors.background}
+      />
     </ThemeProvider>
   );
 }
