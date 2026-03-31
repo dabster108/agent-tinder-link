@@ -1,13 +1,6 @@
 import React from "react";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { BlurView } from "expo-blur";
-import { LinearGradient } from "expo-linear-gradient";
-import {
-  House,
-  MessageCircleMore,
-  SearchCheck,
-  UserRound,
-} from "lucide-react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -15,33 +8,35 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { PremiumTheme } from "@/components/premium/theme";
+import { KindraColors, KindraFonts } from "@/constants/kindraTheme";
 
 type TabMeta = {
   key: string;
   label: string;
-  icon: React.ComponentType<{ color?: string; size?: number }>;
+  icon: keyof typeof Ionicons.glyphMap;
 };
 
 const tabMeta: Record<string, TabMeta> = {
-  index: { key: "index", label: "Home", icon: House },
-  matches: { key: "matches", label: "Matches", icon: SearchCheck },
-  chat: { key: "chat", label: "Chat", icon: MessageCircleMore },
-  profile: { key: "profile", label: "Profile", icon: UserRound },
+  index: { key: "index", label: "Home", icon: "home" },
+  matches: { key: "matches", label: "Matches", icon: "heart" },
+  chat: { key: "chat", label: "Chat", icon: "chatbubbles" },
+  profile: { key: "profile", label: "Profile", icon: "person" },
 };
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 function TabItem({
-  label,
   active,
-  Icon,
+  icon,
+  label,
   onPress,
 }: {
-  label: string;
   active: boolean;
-  Icon: React.ComponentType<{ color?: string; size?: number }>;
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
   onPress: () => void;
 }) {
   const press = useSharedValue(1);
@@ -60,76 +55,77 @@ function TabItem({
     transform: [{ scaleX: 0.7 + indicator.value * 0.3 }],
   }));
 
+  const labelStyle = useAnimatedStyle(() => ({
+    opacity: 0.7 + indicator.value * 0.3,
+  }));
+
   return (
     <AnimatedPressable
       onPress={onPress}
       onPressIn={() => {
-        press.value = withSpring(0.92, { damping: 15, stiffness: 300 });
+        press.value = withSpring(0.96, { damping: 15, stiffness: 300 });
       }}
       onPressOut={() => {
         press.value = withSpring(1, { damping: 15, stiffness: 300 });
       }}
       style={[styles.item, animatedStyle]}
     >
-      <Animated.View style={[styles.activePill, activeStyle]}>
-        <LinearGradient
-          colors={[
-            "rgba(116, 184, 255, 0.42)",
-            "rgba(200, 207, 255, 0.45)",
-            "rgba(255, 215, 236, 0.48)",
-          ]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-      </Animated.View>
-      <Icon
-        color={active ? PremiumTheme.text.primary : PremiumTheme.text.muted}
-        size={18}
+      <Ionicons
+        name={active ? `${icon}` : `${icon}-outline`}
+        color={active ? KindraColors.primaryMid : KindraColors.textMuted}
+        size={22}
       />
-      <Text style={[styles.label, active && styles.labelActive]}>{label}</Text>
+      <Animated.View style={[styles.activeDot, activeStyle]} />
+      <Animated.Text
+        style={[
+          styles.label,
+          labelStyle,
+          active ? styles.labelActive : styles.labelInactive,
+        ]}
+      >
+        {label}
+      </Animated.Text>
     </AnimatedPressable>
   );
 }
 
 export function PremiumTabBar({ state, navigation }: BottomTabBarProps) {
+  const insets = useSafeAreaInsets();
   const visibleRoutes = state.routes.filter((route) => tabMeta[route.name]);
 
   return (
-    <View style={styles.wrap} pointerEvents="box-none">
-      <BlurView intensity={36} tint="light" style={styles.navContainer}>
-        <View style={styles.navInner}>
-          {visibleRoutes.map((route) => {
-            const isFocused =
-              state.index ===
-              state.routes.findIndex((r) => r.key === route.key);
-            const meta = tabMeta[route.name];
-            if (!meta) return null;
+    <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+      <View style={styles.navInner}>
+        {visibleRoutes.map((route) => {
+          const isFocused =
+            state.index === state.routes.findIndex((r) => r.key === route.key);
+          const meta = tabMeta[route.name];
+          if (!meta) return null;
 
-            const onPress = () => {
-              const event = navigation.emit({
-                type: "tabPress",
-                target: route.key,
-                canPreventDefault: true,
-              });
+          const onPress = () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            const event = navigation.emit({
+              type: "tabPress",
+              target: route.key,
+              canPreventDefault: true,
+            });
 
-              if (!isFocused && !event.defaultPrevented) {
-                navigation.navigate(route.name);
-              }
-            };
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name);
+            }
+          };
 
-            return (
-              <TabItem
-                key={route.key}
-                active={isFocused}
-                label={meta.label}
-                Icon={meta.icon}
-                onPress={onPress}
-              />
-            );
-          })}
-        </View>
-      </BlurView>
+          return (
+            <TabItem
+              key={route.key}
+              active={isFocused}
+              icon={meta.icon}
+              label={meta.label}
+              onPress={onPress}
+            />
+          );
+        })}
+      </View>
     </View>
   );
 }
@@ -140,46 +136,51 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-  },
-  navContainer: {
-    borderRadius: 24,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: PremiumTheme.surface.border,
+    backgroundColor: KindraColors.card,
+    borderTopWidth: 1,
+    borderTopColor: KindraColors.border,
+    shadowColor: "#15344f",
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: -2 },
   },
   navInner: {
+    height: 64,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: PremiumTheme.surface.overlay,
-    paddingHorizontal: 6,
-    paddingVertical: 8,
-    gap: 6,
+    justifyContent: "space-around",
+    paddingTop: 8,
+    paddingHorizontal: 12,
   },
   item: {
-    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 16,
-    paddingVertical: 8,
-    gap: 4,
-    overflow: "hidden",
+    minWidth: 68,
+    paddingTop: 2,
+    paddingBottom: 4,
   },
-  activePill: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "rgba(168, 194, 244, 0.54)",
-    overflow: "hidden",
+  activeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: KindraColors.primaryMid,
+    marginTop: 4,
+    marginBottom: 4,
+    shadowColor: KindraColors.primaryMid,
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 0 },
   },
   label: {
-    color: PremiumTheme.text.muted,
     fontSize: 11,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: KindraFonts.bodyMedium,
+    lineHeight: 14,
   },
   labelActive: {
-    color: PremiumTheme.text.primary,
+    color: KindraColors.primaryMid,
+    fontFamily: KindraFonts.bodyBold,
+  },
+  labelInactive: {
+    color: KindraColors.textMuted,
   },
 });
