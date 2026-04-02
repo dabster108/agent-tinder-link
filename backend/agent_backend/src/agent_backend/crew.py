@@ -24,13 +24,13 @@ llm = LLM(
 )
 
 llm_matching = LLM(
-    model="groq/llama-3.3-70b-versatile",
+    model=os.getenv("MODEL"),
     temperature=0.3,    # Lower temp for matching — we want precise, logical decisions
     max_retries=3,
 )
 
 llm_coach = LLM(
-    model="groq/llama-3.3-70b-versatile",
+    model=os.getenv("MODEL"),
     temperature=0.8,    # Slightly warmer for coaching — needs to feel human
     max_retries=3,
 )
@@ -110,25 +110,25 @@ class SoulSyncCrew():
             max_rpm=1,
         )
 
-    @agent
-    def coach_agent(self) -> Agent:
-        """
-        The relationship coach. Activates after a successful match.
-        Helps the matched users actually connect — suggests conversation starters,
-        watches for energy drops, provides real-time nudges, and debriefs
-        after every human-to-human chat session.
-        """
-        return Agent(
-            config=self.agents_config['coach_agent'],
-            tools=[
-                FileWriterTool(),   # Save coaching notes, debrief summaries
-            ],
-            inject_date=True,
-            llm=llm_coach,
-            allow_delegation=False,
-            max_iter=5,
-            max_rpm=1,
-        )
+    # @agent
+    # def coach_agent(self) -> Agent:
+    #     """
+    #     The relationship coach. Activates after a successful match.
+    #     Helps the matched users actually connect — suggests conversation starters,
+    #     watches for energy drops, provides real-time nudges, and debriefs
+    #     after every human-to-human chat session.
+    #     """
+    #     return Agent(
+    #         config=self.agents_config['coach_agent'],
+    #         tools=[
+    #             FileWriterTool(),   # Save coaching notes, debrief summaries
+    #         ],
+    #         inject_date=True,
+    #         llm=llm_coach,
+    #         allow_delegation=False,
+    #         max_iter=5,
+    #         max_rpm=1,
+    #     )
 
     # ── Tasks ─────────────────────────────────────────────────────────
 

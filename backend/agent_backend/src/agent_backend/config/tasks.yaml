@@ -31,7 +31,7 @@ onboarding_task:
   agent: personality_agent
 
 
-onboard_user_task: 
+onboard_user: 
     description: |
       Conduct the initial onboarding session to build the foundation of the user's personality model.
       This includes presenting the scenario game (5 vivid micro‑scenarios), the hot takes rapid‑fire questions,
