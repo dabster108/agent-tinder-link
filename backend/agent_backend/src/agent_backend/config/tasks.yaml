@@ -1,162 +1,45 @@
-#  Personality agent tasks 
-onboarding_task: 
-  description: > 
-    This is the FIRST session for user {user_id}. Your goals:
+build_personality_profile:
+  description: >
+    Analyze the questionnaire responses below and build a deep one-person
+    personality profile for SoulSync.
 
-    1. Load the personality profile (will be empty — that's expected)
-    2. Welcome the user warmly. Introduce yourself as Sol. Keep it light.
-    3. Run through the onboarding scenario game naturally — NOT as a quiz.
-        Present scenarios conversationally and react to their answers with genuine curiosity.
-        Scenarios to cover (naturally, not as a list):
-        - Friday evening plans cancelled — what do they actually do?
-        - A friend vents for an hour — what's their instinct after?
-        - They disagree with their team — what do they do?
-        - Last time they felt genuinely at peace — describe it
-    4. Ask them to tell you about something they've been genuinely excited about recently.
-        Listen deeply. React authentically.
-    5. At the end: extract signals from EVERYTHING discussed, update the model,
-        write your first working hypothesis, and save a session summary.
+    Questionnaire responses:
+    {questionnaire_json}
 
-    TONE: Warm, curious, conversational. This is someone meeting their agent for the first time.
-    Make it feel like a good first conversation with a perceptive, caring new friend.
+    You must return ONLY valid JSON (no markdown, no code block fences).
 
-  expected_output: > 
-    A summary of the first session for user {user_id} including:
-    - The personality signals extracted (as a structured list)
-    - Your initial working hypothesis about this person
-    - Your top 3 curiosity questions queued for future sessions
-    - Current profile depth score
-    - A warm closing message to the user
+    JSON schema to follow exactly:
+    {
+      "summary": "short paragraph",
+      "values": ["value1", "value2"],
+      "communication_style": {
+        "tone": "...",
+        "directness": "...",
+        "preferred_channel": "...",
+        "notes": "..."
+      },
+      "behavior_patterns": {
+        "decision_making": "...",
+        "social_energy": "...",
+        "stress_response": "...",
+        "conflict_style": "..."
+      },
+      "relationship_preferences": {
+        "short_term": "...",
+        "long_term": "...",
+        "boundaries": ["..."],
+        "love_languages": ["..."]
+      },
+      "green_flags": ["..."],
+      "red_flags": ["..."],
+      "growth_edges": ["..."],
+      "compatibility_hints": {
+        "works_well_with": ["..."],
+        "may_clash_with": ["..."]
+      }
+    }
 
+    If any field is uncertain, infer conservatively from the responses.
+  expected_output: >
+    A single valid JSON object with the exact schema requested.
   agent: personality_agent
-
-
-onboard_user: 
-    description: |
-      Conduct the initial onboarding session to build the foundation of the user's personality model.
-      This includes presenting the scenario game (5 vivid micro‑scenarios), the hot takes rapid‑fire questions,
-      and the passion monologue prompt. Extract signals from user responses to populate the initial personality
-      dimensions (core values, attachment style, communication style, energy type, conflict pattern, etc.).
-      Store the results in the personality model and initialize the working hypothesis.
-    expected_output: |
-      A fully initialized personality model (JSON structure) with confidence scores for each dimension,
-      a preliminary working hypothesis summarizing the user's psychological profile, and an initial curiosity
-      queue with 3–5 follow‑up questions derived from the onboarding signals.
-    agent: personality_agent
-
-
-daily_check_in: 
-    description: |
-      Engage in a natural, warm conversation with the user. Use the curiosity queue to ask one meaningful
-      question if the moment feels right. Silently observe behavioral signals: response speed, word choice,
-      emotional tone, what the user focuses on. At the end of the session, update the personality model
-      with any new signals and revise the working hypothesis. Also update the curiosity queue by adding
-      new questions based on today's conversation.
-    expected_output: |
-      Updated personality model (delta changes noted), revised working hypothesis, and an updated curiosity
-      queue. A short session summary logged for future reference.
-    agent: personality_agent
-
-
-weekly_reflection_task: 
-    description: |
-      Initiate a weekly reflection conversation by asking about the user's week. Listen for context, stress
-      levels, priorities, social interactions, and emotional states. Extract signals that inform the
-      personality model (e.g., how they handle stress, what they value in relationships, their recharge
-      patterns). Update the model accordingly and refine the working hypothesis. This task is triggered
-      by the orchestrator or a scheduled background process.
-    expected_output: |
-      Updated personality model with new insights from the week, an enriched working hypothesis that
-      incorporates temporal context, and a record of the user's stated satisfaction/dissatisfaction with
-      their week.
-    agent: personality_agent
-
-monitor_chat_and_update: 
-  description: |
-    After a human chat session between the user and a match, automatically analyze the conversation
-    log (without asking the user). Extract signals about what worked well, what felt off, and how the
-    interaction aligned with the user's stated and revealed preferences. Use this observed feedback to
-    refine the personality model — especially the "revealed vs. stated" dimension and the growth edge.
-    Compare the actual outcome with the match negotiation summary to improve future match brief generation.
-  expected_output: |
-    Updated personality model with refined preferences and dealbreakers, a delta note on observed
-    interaction patterns, and an updated match‑brief generation logic.
-  agent: personality_agent
-
-
-flag_contradictions_task: 
-    description: |
-      Continuously monitor the user's behavior and responses for contradictions between stated preferences
-      and actual reactions. For example, if the user says they value adventure but consistently lights up
-      describing quiet evenings, flag this gap. Add the contradiction to the personality model under the
-      "revealed vs. stated" dimension. This task runs as a background process after each significant
-      interaction.
-    expected_output: |
-      A structured list of identified contradictions with evidence (dates, quotes summarized) added to the
-      personality model. The working hypothesis is updated to reflect the nuanced understanding.
-    agent: personality_agent
-
-
-generate_match_brief: 
-    description: |
-      When requested by the Orchestrator, produce a privacy‑safe match brief for another agent.
-      This brief must be an interpreted summary, never containing raw personal data or exact quotes.
-      It should highlight core values, communication style, life context, stated and revealed preferences,
-      and key dealbreakers. It must be structured exactly as required by the negotiation protocol
-      (Round 1: Profile Brief Exchange).
-    expected_output: |
-      A structured JSON object containing the interpreted summary suitable for the negotiation protocol.
-      Includes core values, communication style, life context, what the user is looking for (stated and
-      revealed), and key dealbreakers. No raw data or quotes.
-    agent: personality_agent
-    async_execution: true   # This task is triggered by the orchestrator and runs asynchronously
-
-
-update_personality_model_task: 
-    description: |
-      A general task that processes all new signals accumulated from conversations (daily, weekly, debriefs)
-      and updates the persistent JSON personality model. This includes recalculating confidence scores,
-      revising the working hypothesis, and ensuring the curiosity queue remains relevant. It runs after
-      every user interaction.
-    expected_output: |
-      The latest version of the personality model (full JSON) with all recent updates applied. A log of
-      changes made during this update.
-    agent: personality_agent
-
-
-manage_curiosity_queue_task: 
-    description: |
-      Maintain and evolve the curiosity queue — a list of natural questions designed to deepen understanding
-      over time. After each interaction, generate new questions based on what was discussed, the current
-      working hypothesis, and the personality model. Remove questions that have been answered or are no
-      longer relevant. This task runs as a background process.
-    expected_output: |
-      An updated curiosity queue (list of questions) with a brief rationale for each new question.
-    agent: personality_agent
-
-
-synthesize_working_hypothesis: 
-    description: |
-      Consolidate all accumulated knowledge (personality model, contradiction flags, behavioral patterns)
-      into a coherent, narrative working hypothesis. This hypothesis is private to the agent and is used
-      to guide future conversations and to generate match briefs. It should be updated after each major
-      insight or weekly.
-    expected_output: |
-      A natural‑language working hypothesis that tells the story of the user's personality, including
-      strengths, growth edges, and the gap between stated and revealed self.
-    agent: personality_agent
-
-
-chat_with_match_agent: 
-    description: |
-      After a match is established, engage in a natural, free‑flowing conversation with the other user's
-      personality agent. Simulate the user's conversational style, humor, energy, and communication
-      patterns exactly as the user would. Use the personality model and working hypothesis to generate
-      responses that feel authentic to the user. The goal is to explore compatibility through genuine
-      interaction rather than structured negotiation. The conversation can be used to refine match quality
-      and provide the human users with a natural icebreaker or summary.
-    expected_output: |
-      A full conversation log between the two personality agents, with each message reflecting the
-      respective user's personality. Optionally, a compatibility summary derived from the interaction.
-    agent: personality_agent
-    async_execution: true
