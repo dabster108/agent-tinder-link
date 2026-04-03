@@ -105,5 +105,95 @@
     "notes": [],
     "profile_raw_output": "```json\n{\n  \"summary\": \"Packman describes themselves as a deeply committed and hardworking individual. This suggests a personality that values dedication, effort, and follow-through in their various endeavors, whether personal or professional.\",\n  \"values\": [\n    \"Commitment\",\n    \"Diligence\",\n    \"Work ethic\",\n    \"Dedication\"\n  ],\n  \"communication_style\": {\n    \"tone\": \"Declarative, self-assured\",\n    \"directness\": \"Highly direct, upfront in self-description\",\n    \"preferred_channel\": \"Unknown\",\n    \"notes\": \"Packman quickly and clearly states core aspects of their personality. This indicates a willingness to self-disclose important traits early in a conversation.\"\n  },\n  \"behavior_patterns\": {\n    \"decision_making\": \"Unknown\",\n    \"social_energy\": \"Unknown\",\n    \"stress_response\": \"Unknown\",\n    \"conflict_style\": \"Unknown\"\n  },\n  \"relationship_preferences\": {\n    \"short_term\": \"Unknown\",\n    \"long_term\": \"Given their self-identification as 'committed', it is plausible they would value long-term stability and dedication in relationships. However, specific relationship goals are unknown.\",\n    \"boundaries\": [\n      \"Unknown\"\n    ],\n    \"love_languages\": [\n      \"Unknown\"\n    ]\n  },\n  \"green_flags\": [\n    \"Commitment\",\n    \"Strong work ethic\",\n    \"Dedication to goals and relationships\",\n    \"Reliability\"\n  ],\n  \"red_flags\": [\n    \"None indicated from the current data\"\n  ],\n  \"growth_edges\": [\n    \"Requires further self-reflection or input to identify specific growth edges. The current data is too limited to make an accurate assessment.\"\n  ],\n  \"compatibility_hints\": {\n    \"works_well_with\": [\n      \"Individuals who also value commitment and dedication\",\n      \"Partners who appreciate a strong work ethic and reliability\",\n      \"Those who seek stable and devoted relationships (inferred)\"\n    ],\n    \"may_clash_with\": [\n      \"Individuals who are uncommitted or inconsistent\",\n      \"Partners who prefer a more casual or less dedicated approach to life and relationships\"\n    ]\n  }\n}\n```",
     "total_turns": 1
+  },
+  {
+    "session_id": "personality-chat-20260403141943",
+    "created_at": "2026-04-03T14:19:43.777405+00:00",
+    "last_updated_at": "2026-04-03T14:20:37.791841+00:00",
+    "agent": "personality_agent",
+    "mode": "conversation",
+    "user": {
+      "name": "diku"
+    },
+    "conversation": [
+      {
+        "turn": 1,
+        "timestamp": "2026-04-03T14:20:22.629189+00:00",
+        "user_message": "I am a very passionate developer",
+        "assistant_reply": "That's wonderful to hear, diku! Passion can be such a powerful driving force. What aspects of being a developer truly ignite that passion for you?",
+        "memory_update": {
+          "values_signals": [
+            "High value placed on passion/enthusiasm in work/life.",
+            "Potential value for mastery/dedication/purpose/problem-solving related to development."
+          ],
+          "communication_notes": [
+            "Direct and declarative about personal identity/profession."
+          ],
+          "behavior_signals": [
+            "Likely exhibits high engagement and drive in areas of passion (specifically development).",
+            "Suggests a professional identity as a developer."
+          ],
+          "relationship_goals": [],
+          "boundaries": []
+        },
+        "raw_chat_output": "```json\n{\n\t\"assistant_reply\": \"That's wonderful to hear, diku! Passion can be such a powerful driving force. What aspects of being a developer truly ignite that passion for you?\",\n\t\"memory_update\": {\n\t\t\"values_signals\": [\n\t\t\t\"High value placed on passion/enthusiasm in work/life.\",\n\t\t\t\"Potential value for mastery/dedication/purpose/problem-solving related to development.\"\n\t\t],\n\t\t\"communication_notes\": [\n\t\t\t\"Direct and declarative about personal identity/profession.\"\n\t\t],\n\t\t\"behavior_signals\": [\n\t\t\t\"Likely exhibits high engagement and drive in areas of passion (specifically development).\",\n\t\t\t\"Suggests a professional identity as a developer.\"\n\t\t],\n\t\t\"relationship_goals\": [],\n\t\t\"boundaries\": []\n\t}\n}\n```"
+      }
+    ],
+    "profile": {
+      "summary": "diku describes themself as a 'very passionate developer,' indicating a strong sense of enthusiasm and dedication towards their professional field. This self-assessment points to a personality that likely invests significant energy and emotion into areas of personal interest and expertise.",
+      "values": [
+        "Passion",
+        "Dedication",
+        "Enthusiasm",
+        "Purpose"
+      ],
+      "communication_style": {
+        "tone": "Enthusiastic (in areas of interest), Direct (in self-description)",
+        "directness": "Direct (stated personal attribute clearly and concisely)",
+        "preferred_channel": "Unknown - Insufficient data",
+        "notes": "Tends to make direct and enthusiastic statements when describing their identity or interests."
+      },
+      "behavior_patterns": {
+        "decision_making": "Unknown - Insufficient data",
+        "social_energy": "Unknown - Insufficient data",
+        "stress_response": "Unknown - Insufficient data",
+        "conflict_style": "Unknown - Insufficient data"
+      },
+      "relationship_preferences": {
+        "short_term": "Unknown - Insufficient data",
+        "long_term": "Unknown - Insufficient data",
+        "boundaries": [
+          "Unknown - Insufficient data"
+        ],
+        "love_languages": [
+          "Unknown - Insufficient data"
+        ]
+      },
+      "green_flags": [
+        "Passion for interests",
+        "Dedication",
+        "Self-awareness (able to articulate a core aspect of self)"
+      ],
+      "red_flags": [
+        "None observed - Insufficient data"
+      ],
+      "growth_edges": [
+        "Unknown - Insufficient data"
+      ],
+      "compatibility_hints": {
+        "works_well_with": [
+          "Individuals who appreciate and can match diku's passion and enthusiasm",
+          "Partners who are supportive of career dedication and personal interests",
+          "People who have their own strong passions or interests"
+        ],
+        "may_clash_with": [
+          "Individuals who are apathetic or dismissive of others' deep interests",
+          "Individuals who may not understand or value deep professional dedication"
+        ]
+      }
+    },
+    "notes": [],
+    "profile_raw_output": "```json\n{\n  \"summary\": \"diku describes themself as a 'very passionate developer,' indicating a strong sense of enthusiasm and dedication towards their professional field. This self-assessment points to a personality that likely invests significant energy and emotion into areas of personal interest and expertise.\",\n  \"values\": [\n    \"Passion\",\n    \"Dedication\",\n    \"Enthusiasm\",\n    \"Purpose\"\n  ],\n  \"communication_style\": {\n    \"tone\": \"Enthusiastic (in areas of interest), Direct (in self-description)\",\n    \"directness\": \"Direct (stated personal attribute clearly and concisely)\",\n    \"preferred_channel\": \"Unknown - Insufficient data\",\n    \"notes\": \"Tends to make direct and enthusiastic statements when describing their identity or interests.\"\n  },\n  \"behavior_patterns\": {\n    \"decision_making\": \"Unknown - Insufficient data\",\n    \"social_energy\": \"Unknown - Insufficient data\",\n    \"stress_response\": \"Unknown - Insufficient data\",\n    \"conflict_style\": \"Unknown - Insufficient data\"\n  },\n  \"relationship_preferences\": {\n    \"short_term\": \"Unknown - Insufficient data\",\n    \"long_term\": \"Unknown - Insufficient data\",\n    \"boundaries\": [\n      \"Unknown - Insufficient data\"\n    ],\n    \"love_languages\": [\n      \"Unknown - Insufficient data\"\n    ]\n  },\n  \"green_flags\": [\n    \"Passion for interests\",\n    \"Dedication\",\n    \"Self-awareness (able to articulate a core aspect of self)\"\n  ],\n  \"red_flags\": [\n    \"None observed - Insufficient data\"\n  ],\n  \"growth_edges\": [\n    \"Unknown - Insufficient data\"\n  ],\n  \"compatibility_hints\": {\n    \"works_well_with\": [\n      \"Individuals who appreciate and can match diku's passion and enthusiasm\",\n      \"Partners who are supportive of career dedication and personal interests\",\n      \"People who have their own strong passions or interests\"\n    ],\n    \"may_clash_with\": [\n      \"Individuals who are apathetic or dismissive of others' deep interests\",\n      \"Individuals who may not understand or value deep professional dedication\"\n    ]\n  }\n}\n```",
+    "total_turns": 1
   }
 ]
