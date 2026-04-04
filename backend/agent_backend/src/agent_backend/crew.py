@@ -22,6 +22,12 @@ class ChatTurnResult:
 	memory_update: Dict[str, Any]
 
 
+@dataclass
+class BehaviorUpdateResult:
+	raw_output: str
+	behavior_update: Dict[str, Any]
+
+
 QUESTION_GENERATION_PROMPT = """
 Generate exactly {question_count} deep personality onboarding questions for SoulSync.
 
@@ -50,6 +56,55 @@ Rules:
 - Avoid yes/no-only questions.
 - Use unique ids.
 - Do not include markdown fences.
+""".strip()
+
+
+ONBOARDING_QUESTION_PROMPT = """
+You are Sol. The user just created a SoulSync account and you are generating the
+first onboarding questions.
+
+Use the following account/profile context:
+{user_context}
+
+Generate exactly {question_count} scenario-based personality questions.
+
+Rules:
+- Ask exactly one scenario-based question for each personality dimension.
+- Make the scenarios vivid, personal, and conversational.
+- Prefer "what would you do if..." style framing.
+- Do not ask about work, study, or career.
+- Do not include markdown fences or explanations.
+
+Return ONLY valid JSON with this schema:
+{{
+	"questions": [
+	{{
+	  "id": "snake_case_id",
+	  "question": "question text",
+	  "focus": "what this question measures"
+	}}
+	]
+}}
+""".strip()
+
+
+BEHAVIOR_UPDATE_PROMPT = """
+You are Sol. Analyze the user's recent conversation behavior and update the
+personality model without asking any new questions.
+
+User name: {user_name}
+Conversation history JSON:
+{conversation_json}
+
+Return ONLY valid JSON with this schema:
+{{
+	"summary": "short behavioral read of what changed or was reinforced",
+	"behavior_signals": ["..."],
+	"communication_notes": ["..."],
+	"relationship_signals": ["..."],
+	"boundary_signals": ["..."],
+	"next_session_focus": ["..."]
+}}
 """.strip()
 
 
@@ -229,6 +284,21 @@ def run_personality_question_generator(question_count: int = 12) -> List[Dict[st
 	return extract_questions(raw)
 
 
+def run_onboarding_question_generator(
+	user_context: Dict[str, Any], question_count: int = 5
+) -> List[Dict[str, str]]:
+	context_json = json.dumps(user_context, ensure_ascii=True)
+	prompt = ONBOARDING_QUESTION_PROMPT.format(
+		question_count=max(1, question_count),
+		user_context=context_json,
+	)
+	raw = _run_prompt_with_fallback(prompt)
+	questions = extract_questions(raw)
+	if len(questions) > question_count:
+		return questions[:question_count]
+	return questions
+
+
 def run_personality_chat_turn(
 	conversation_history: List[Dict[str, Any]], user_message: str, user_name: str = "User"
 ) -> ChatTurnResult:
@@ -265,6 +335,32 @@ def run_personality_chat_turn(
 		raw_output=raw,
 		assistant_reply=assistant_reply,
 		memory_update=memory_update,
+	)
+
+
+def run_personality_behavior_update(
+	conversation_history: List[Dict[str, Any]], user_name: str = "User"
+) -> BehaviorUpdateResult:
+	conversation_json = json.dumps(conversation_history, ensure_ascii=True)
+	prompt = BEHAVIOR_UPDATE_PROMPT.format(
+		user_name=user_name,
+		conversation_json=conversation_json,
+	)
+
+	try:
+		raw = _run_prompt_with_fallback(prompt)
+	except Exception as exc:  # noqa: BLE001
+		return BehaviorUpdateResult(
+			raw_output=f"ERROR: {exc}",
+			behavior_update={},
+		)
+
+	parsed = extract_json_object(raw)
+	behavior_update = parsed if isinstance(parsed, dict) else {}
+
+	return BehaviorUpdateResult(
+		raw_output=raw,
+		behavior_update=behavior_update,
 	)
 
 

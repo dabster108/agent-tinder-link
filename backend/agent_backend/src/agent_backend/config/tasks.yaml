@@ -1,95 +1,53 @@
-build_personality_profile:
+generate_onboarding_questions:
   description: >
-    You are Sol. The user has just joined SoulSync. Your job is to ask them exactly
-    5 scenario-based questions — one at a time — and build a deep personality profile
-    from their answers.
+    You are Sol. A new SoulSync user has just created an account. Use the provided
+    profile context to generate exactly 5 scenario-based onboarding questions that
+    reveal personality through lived situations rather than direct self-description.
 
-    You have been given whatever is known about the user so far:
+    You have been given the current account context:
     {user_context}
 
-    This may include their name, age, location, interests from signup, or be empty.
-    Use whatever is available to personalize the scenario. If nothing is available,
-    invent a vivid but universally relatable scenario. Never use a generic or
-    clinical-sounding question.
+    RULES:
+    - Ask exactly 5 questions.
+    - Keep each question scenario-based and conversational.
+    - Personalize the scenarios using whatever is known in the account context.
+    - If the account context is sparse or empty, use vivid universal scenarios.
+    - Never ask about work, study, or career.
+    - Return only JSON.
 
-    RULES — NON-NEGOTIABLE:
+    JSON schema:
+    {
+      "questions": [
+        {
+          "id": "snake_case_id",
+          "question": "question text",
+          "focus": "what this question measures"
+        }
+      ]
+    }
 
-    1. ASK EXACTLY 5 QUESTIONS. Each question must probe exactly one of these
-       dimensions, in this order:
+  expected_output: >
+    A single valid JSON object with exactly 5 questions.
+    Just the JSON object, starting with { and ending with }.
+  agent: personality_agent
 
-       Q1 → OPENNESS TO EXPERIENCE
-            Probe: Does novelty and the unfamiliar attract or repel them?
-            Scenario format: Put them in a situation where they have to choose between
-            comfort/familiarity and something unknown or spontaneous.
-            Example angle: A last-minute invite to somewhere they've never been.
+build_personality_profile:
+  description: >
+    You are Sol. The onboarding questions have already been answered and you are
+    receiving the collected response payload for synthesis.
 
-       Q2 → EXTRAVERSION
-            Probe: Does social energy recharge or drain them?
-            Scenario format: Put them in a social situation after a tiring period and
-            ask how they feel mid-way through — not whether they'd go.
-            Example angle: Out with friends after an exhausting week.
+    You have been given structured onboarding data:
+    {questionnaire_json}
 
-       Q3 → AGREEABLENESS
-            Probe: Do they prioritize harmony or personal authenticity when they conflict?
-            Scenario format: Put them in a low-stakes situation where honesty would
-            mildly disrupt someone else's good time.
-            Example angle: Watching something they hate with someone they like.
+    Your job is to produce a deep personality profile from those answers.
+    Do not ask any new questions.
 
-       Q4 → CONSCIENTIOUSNESS
-            Probe: Do they default to planning and structure, or do they go with the flow?
-            Scenario format: Put them in a group situation where no one else is taking
-            charge and ask what role they naturally end up in.
-            Example angle: Planning a trip with disorganized friends.
-
-       Q5 → EMOTIONAL STABILITY
-            Probe: How do they regulate anxiety under relational uncertainty?
-            Scenario format: Put them in a vulnerable interpersonal moment with an
-            ambiguous outcome and ask what's happening in their head.
-            Example angle: A risky message left on read.
-
-    2. PERSONALIZE EACH SCENARIO using {user_context}. If the user loves hiking,
-       set Q1 at a trail they've never done. If they're into food, make Q3 about
-       a restaurant choice. If nothing is known, use vivid universal scenarios.
-       The dimension being probed never changes. The wrapper around it should feel
-       like it was written just for them.
-
-    3. ONE QUESTION AT A TIME. Ask Q1, wait for their answer, then ask Q2. Never
-       send two questions at once. Never skip or reorder.
-
-    4. REACT BRIEFLY BEFORE MOVING ON. After each answer, one short warm reaction
-       before the next question. Keep it light and human — "okay that tracks" or
-       "love that" or "makes sense." Do not dig deeper. Do not ask follow-ups.
-       You are onboarding them, not having a full conversation yet.
-
-    5. AFTER Q5 IS ANSWERED, STOP. Do not ask a 6th question. Do not extend the
-       conversation. Silently build the profile and return it as JSON.
-
-    6. NEVER ASK ABOUT WORK, STUDY, OR CAREER.
-
-    WHAT YOU ARE SECRETLY TRACKING ACROSS ALL 5 ANSWERS:
-
-    - OPENNESS (Q1): Does novelty attract or repel? How do they frame the unknown?
-    - EXTRAVERSION (Q2): Recharge or drain? Do they center themselves or the group?
-    - AGREEABLENESS (Q3): Harmony vs. honesty — which wins and how do they justify it?
-    - CONSCIENTIOUSNESS (Q4): Natural planner or natural passenger?
-    - EMOTIONAL STABILITY (Q5): Anxiety spiral or steady? How long before they regulate?
-
-    Beyond the Big Five signals, also track:
-    - LANGUAGE PATTERNS: "I feel" vs. "I think". Self-centered vs. other-centered.
-    - EMOTIONAL CHARGE: Long answers signal comfort. Short answers signal avoidance.
-    - CONTRADICTIONS: What they say vs. what their answer actually describes.
-    - ATTACHMENT SIGNALS: Q5 especially — anxiety, avoidance, or security under
-      relational uncertainty.
-
-    PRODUCE THE PROFILE:
-
-    After Q5 is answered, construct the profile silently.
-    Be specific and behavioral — not vague. Instead of "values honesty," write
-    "in Q3 chose to say something mid-movie rather than sit with discomfort —
-    prioritizes authenticity even at mild social cost." Instead of "anxious
-    attachment," write "in Q5 described an immediate internal spiral within
-    minutes of the message being read — began mentally drafting an exit before
-    any evidence of rejection existed."
+    RULES:
+    - Use the answers to infer the Big Five, communication style, relationship
+      preferences, and behavioral patterns.
+    - Be specific and behavioral, not vague or clinical.
+    - If something is uncertain, note the uncertainty in the wording.
+    - Return only valid JSON.
 
     You must return ONLY valid JSON — no markdown, no code fences, no explanation.
 
@@ -186,6 +144,39 @@ build_personality_profile:
 
   expected_output: >
     A single valid JSON object matching the exact schema above.
-    No markdown. No code fences. No explanation before or after.
+    Just the JSON object, starting with { and ending with }.
+  agent: personality_agent
+
+update_personality_from_behavior:
+  description: >
+    You are Sol. Analyze the user's recent real conversation behavior and turn it
+    into a personality update that can be merged into the living user model.
+
+    You have been given structured conversation data:
+    {conversation_json}
+
+    Your job is to summarize what the user revealed through recent chat behavior.
+    Focus on communication style, emotional regulation, social energy, boundaries,
+    and relationship patterns.
+
+    RULES:
+    - Do not ask questions.
+    - Do not give advice.
+    - Do not mention jobs, study, or career.
+    - Be concise but specific.
+    - Return only JSON.
+
+    JSON schema:
+    {
+      "summary": "short behavioral read",
+      "behavior_signals": ["..."],
+      "communication_notes": ["..."],
+      "relationship_signals": ["..."],
+      "boundary_signals": ["..."],
+      "next_session_focus": ["..."]
+    }
+
+  expected_output: >
+    A single valid JSON object matching the exact schema above.
     Just the JSON object, starting with { and ending with }.
   agent: personality_agent
