@@ -138,6 +138,7 @@ def run() -> None:
 		"behavior_updates": [],
 		"notes": [],
 	}
+	thread_id = session_payload["session_id"]
 
 	print("\nSoulSync Personality Agent (chat mode)")
 	print("Type 'exit' anytime to stop.\n")
@@ -150,7 +151,10 @@ def run() -> None:
 	if skip_agent:
 		onboarding_questions = _default_onboarding_questions()
 	else:
-		onboarding_questions = run_onboarding_question_generator(user_context)
+		onboarding_questions = run_onboarding_question_generator(
+			user_context,
+			thread_id=thread_id,
+		)
 		if len(onboarding_questions) < 5:
 			onboarding_questions = _default_onboarding_questions()
 
@@ -201,7 +205,10 @@ def run() -> None:
 				for item in session_payload["onboarding"]["answers"]
 			],
 		}
-		profile_result = run_personality_agent(questionnaire_json=json.dumps(profile_input, ensure_ascii=True))
+		profile_result = run_personality_agent(
+			questionnaire_json=json.dumps(profile_input, ensure_ascii=True),
+			thread_id=thread_id,
+		)
 		profile_payload = profile_result.parsed_profile
 		profile_raw_output = profile_result.raw_output
 
@@ -232,6 +239,7 @@ def run() -> None:
 				conversation_history=session_payload["conversation"],
 				user_message=user_message,
 				user_name=user_name,
+				thread_id=thread_id,
 			)
 			agent_reply = chat_result.assistant_reply
 			memory_update = chat_result.memory_update
@@ -252,6 +260,7 @@ def run() -> None:
 			behavior_result = run_personality_behavior_update(
 				conversation_history=session_payload["conversation"],
 				user_name=user_name,
+				thread_id=thread_id,
 			)
 			session_payload["behavior_updates"].append(
 				{

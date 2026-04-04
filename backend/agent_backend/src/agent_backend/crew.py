@@ -7,6 +7,10 @@ from typing import Any, Dict, List
 from crewai import Agent, Crew, Process, Task
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from crewai.project import CrewBase, agent, crew, task
+from opik.integrations.crewai import track_crewai
+
+
+_TRACKED_CREW_IDS: set[int] = set()
 
 
 @dataclass
@@ -277,15 +281,28 @@ def _run_prompt_with_fallback(prompt: str) -> str:
 	raise RuntimeError("LLM call failed without a captured exception.")
 
 
+def _get_opik_project_name() -> str:
+	project_name = (os.getenv("OPIK_PROJECT_NAME", "") or "").strip()
+	return project_name or "soulsync-agent"
+
+
+def _enable_crewai_tracking(crew_instance: Crew) -> None:
+	crew_id = id(crew_instance)
+	if crew_id in _TRACKED_CREW_IDS:
+		return
+
+	track_crewai(project_name=_get_opik_project_name(), crew=crew_instance)
+	_TRACKED_CREW_IDS.add(crew_id)
+
+
 def run_personality_question_generator(question_count: int = 12) -> List[Dict[str, str]]:
 	count = max(6, min(question_count, 20))
 	prompt = QUESTION_GENERATION_PROMPT.format(question_count=count)
 	raw = _run_prompt_with_fallback(prompt)
 	return extract_questions(raw)
 
-
 def run_onboarding_question_generator(
-	user_context: Dict[str, Any], question_count: int = 5
+	user_context: Dict[str, Any], question_count: int = 5, thread_id: str| None = None
 ) -> List[Dict[str, str]]:
 	context_json = json.dumps(user_context, ensure_ascii=True)
 	prompt = ONBOARDING_QUESTION_PROMPT.format(
@@ -298,9 +315,8 @@ def run_onboarding_question_generator(
 		return questions[:question_count]
 	return questions
 
-
 def run_personality_chat_turn(
-	conversation_history: List[Dict[str, Any]], user_message: str, user_name: str = "User"
+	conversation_history: List[Dict[str, Any]], user_message: str, user_name: str = "User", thread_id: str| None = None
 ) -> ChatTurnResult:
 	history_json = json.dumps(conversation_history, ensure_ascii=True)
 	prompt = CHAT_TURN_PROMPT.format(
@@ -339,7 +355,7 @@ def run_personality_chat_turn(
 
 
 def run_personality_behavior_update(
-	conversation_history: List[Dict[str, Any]], user_name: str = "User"
+	conversation_history: List[Dict[str, Any]], user_name: str = "User", thread_id: str| None = None
 ) -> BehaviorUpdateResult:
 	conversation_json = json.dumps(conversation_history, ensure_ascii=True)
 	prompt = BEHAVIOR_UPDATE_PROMPT.format(
@@ -364,10 +380,15 @@ def run_personality_behavior_update(
 	)
 
 
-def run_personality_agent(questionnaire_json: str) -> PersonalityRunResult:
+def run_personality_agent(questionnaire_json: str, thread_id: str| None = None) -> PersonalityRunResult:
 	try:
-		output = AgentBackend().crew().kickoff(
-			inputs={"questionnaire_json": questionnaire_json}
+		crew_instance = AgentBackend().crew()
+		_enable_crewai_tracking(crew_instance)
+		opik_args = {"trace": {"thread_id": thread_id}} if thread_id else None
+
+		output = crew_instance.kickoff(
+			inputs={"questionnaire_json": questionnaire_json},
+			opik_args=opik_args,
 		)
 
 		raw = getattr(output, "raw", None)
