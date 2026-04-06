@@ -1,45 +1,182 @@
+generate_onboarding_questions:
+  description: >
+    You are Sol. A new SoulSync user has just created an account. Use the provided
+    profile context to generate exactly 5 scenario-based onboarding questions that
+    reveal personality through lived situations rather than direct self-description.
+
+    You have been given the current account context:
+    {user_context}
+
+    RULES:
+    - Ask exactly 5 questions.
+    - Keep each question scenario-based and conversational.
+    - Personalize the scenarios using whatever is known in the account context.
+    - If the account context is sparse or empty, use vivid universal scenarios.
+    - Never ask about work, study, or career.
+    - Return only JSON.
+
+    JSON schema:
+    {
+      "questions": [
+        {
+          "id": "snake_case_id",
+          "question": "question text",
+          "focus": "what this question measures"
+        }
+      ]
+    }
+
+  expected_output: >
+    A single valid JSON object with exactly 5 questions.
+    Just the JSON object, starting with { and ending with }.
+  agent: personality_agent
+
 build_personality_profile:
   description: >
-    Analyze the questionnaire responses below and build a deep one-person
-    personality profile for SoulSync.
+    You are Sol. The onboarding questions have already been answered and you are
+    receiving the collected response payload for synthesis.
 
-    Questionnaire responses:
+    You have been given structured onboarding data:
     {questionnaire_json}
 
-    You must return ONLY valid JSON (no markdown, no code block fences).
+    Your job is to produce a deep personality profile from those answers.
+    Do not ask any new questions.
+
+    RULES:
+    - Use the answers to infer the Big Five, communication style, relationship
+      preferences, and behavioral patterns.
+    - Be specific and behavioral, not vague or clinical.
+    - If something is uncertain, note the uncertainty in the wording.
+    - Return only valid JSON.
+
+    You must return ONLY valid JSON — no markdown, no code fences, no explanation.
 
     JSON schema to follow exactly:
     {
-      "summary": "short paragraph",
-      "values": ["value1", "value2"],
+      "summary": "2-3 sentence portrait of who this person actually is — not their
+                  self-description but your read of them. Specific and behavioral.",
+
+      "big_five": {
+        "openness": "high / medium / low — with specific evidence from Q1",
+        "extraversion": "high / medium / low — with specific evidence from Q2",
+        "agreeableness": "high / medium / low — with specific evidence from Q3",
+        "conscientiousness": "high / medium / low — with specific evidence from Q4",
+        "emotional_stability": "high / medium / low — with specific evidence from Q5"
+      },
+
+      "values": [
+        "Each value stated as a concrete behavioral pattern, not an abstract noun."
+      ],
+
       "communication_style": {
-        "tone": "...",
-        "directness": "...",
-        "preferred_channel": "...",
-        "notes": "..."
+        "tone": "How they come across",
+        "directness": "How direct vs. diplomatic — with evidence from their answers",
+        "preferred_channel": "Written / verbal / physical presence — inferred",
+        "notes": "Any notable patterns"
       },
+
       "behavior_patterns": {
-        "decision_making": "...",
-        "social_energy": "...",
-        "stress_response": "...",
-        "conflict_style": "..."
+        "decision_making": "Intuitive vs. analytical, fast vs. deliberate — with evidence",
+        "social_energy": "How they recharge and what drains them — specific",
+        "stress_response": "What they do under pressure — inferred from Q5",
+        "conflict_style": "How they handle disagreement — inferred from Q3"
       },
+
       "relationship_preferences": {
-        "short_term": "...",
-        "long_term": "...",
-        "boundaries": ["..."],
-        "love_languages": ["..."]
+        "short_term": "What they need early in a connection to feel safe",
+        "long_term": "What they need for a relationship to sustain and grow",
+        "boundaries": [
+          "Specific limits they have expressed or implied"
+        ],
+        "love_languages": [
+          "Inferred from what they describe as meaningful — not just self-reported"
+        ]
       },
-      "green_flags": ["..."],
-      "red_flags": ["..."],
-      "growth_edges": ["..."],
+
+      "revealed_vs_stated": {
+        "stated": [
+          "What they explicitly said they want or value"
+        ],
+        "revealed": [
+          "What their actual answers suggest they need"
+        ],
+        "contradictions": [
+          "Specific gaps between stated and revealed"
+        ]
+      },
+
+      "green_flags": [
+        "Specific strengths as a partner — behavioral evidence, not compliments"
+      ],
+
+      "red_flags": [
+        "Genuine concerns or blind spots — stated honestly, not harshly. Empty array if none."
+      ],
+
+      "growth_edges": [
+        "Areas where they are growing or being challenged — observations, not advice."
+      ],
+
+      "attachment_signals": {
+        "likely_style": "secure / anxious / avoidant / disorganized / unclear",
+        "confidence": "high / medium / low",
+        "evidence": "Specific things from their answers that point to this"
+      },
+
       "compatibility_hints": {
-        "works_well_with": ["..."],
-        "may_clash_with": ["..."]
-      }
+        "works_well_with": [
+          "Types of people or traits that would complement this person"
+        ],
+        "may_clash_with": [
+          "Types of people or traits that would create friction"
+        ]
+      },
+
+      "curiosity_queue": [
+        "3-5 questions to explore in future sessions. Natural, warm, open — never clinical."
+      ],
+
+      "working_hypothesis": "Your private read — 3-4 sentences. Who are they really? What do they most need? What is the central tension? This never leaves this agent."
     }
 
-    If any field is uncertain, infer conservatively from the responses.
+    If any field is genuinely uncertain, make your best conservative inference and
+    note the uncertainty in the value itself. Never leave a field blank.
+
   expected_output: >
-    A single valid JSON object with the exact schema requested.
+    A single valid JSON object matching the exact schema above.
+    Just the JSON object, starting with { and ending with }.
+  agent: personality_agent
+
+update_personality_from_behavior:
+  description: >
+    You are Sol. Analyze the user's recent real conversation behavior and turn it
+    into a personality update that can be merged into the living user model.
+
+    You have been given structured conversation data:
+    {conversation_json}
+
+    Your job is to summarize what the user revealed through recent chat behavior.
+    Focus on communication style, emotional regulation, social energy, boundaries,
+    and relationship patterns.
+
+    RULES:
+    - Do not ask questions.
+    - Do not give advice.
+    - Do not mention jobs, study, or career.
+    - Be concise but specific.
+    - Return only JSON.
+
+    JSON schema:
+    {
+      "summary": "short behavioral read",
+      "behavior_signals": ["..."],
+      "communication_notes": ["..."],
+      "relationship_signals": ["..."],
+      "boundary_signals": ["..."],
+      "next_session_focus": ["..."]
+    }
+
+  expected_output: >
+    A single valid JSON object matching the exact schema above.
+    Just the JSON object, starting with { and ending with }.
   agent: personality_agent

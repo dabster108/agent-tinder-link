@@ -7,7 +7,12 @@ from typing import Any, Dict, List
 
 from dotenv import load_dotenv
 
-from agent_backend.crew import run_personality_agent, run_personality_chat_turn
+from agent_backend.crew import (
+	run_onboarding_question_generator,
+	run_personality_agent,
+	run_personality_behavior_update,
+	run_personality_chat_turn,
+)
 
 
 def _response_file_path() -> Path:
@@ -21,6 +26,51 @@ def _load_env() -> None:
 
 def _iso_now() -> str:
 	return datetime.now(timezone.utc).isoformat()
+
+
+def _build_dummy_user_context(user_name: str) -> Dict[str, Any]:
+	return {
+		"name": user_name,
+		"age": "unknown",
+		"location": "unknown",
+		"interests": [],
+		"lifestyle": [],
+		"relationship_goals": [],
+		"account_notes": [
+			"No signup profile details have been captured yet.",
+			"Use vivid universal scenarios if the account context is sparse.",
+		],
+	}
+
+
+def _default_onboarding_questions() -> List[Dict[str, str]]:
+	return [
+		{
+			"id": "openness_unknown_place",
+			"question": "You get a last-minute invite to spend the evening somewhere you've never been before with people you barely know. What do you actually do?",
+			"focus": "openness to experience",
+		},
+		{
+			"id": "extraversion_social_fatigue",
+			"question": "You've had a draining week, but your friends want you out for a few hours. Halfway through the hangout, how are you really feeling?",
+			"focus": "extraversion",
+		},
+		{
+			"id": "agreeableness_honesty",
+			"question": "You're watching something with a person you like, but you cannot stand it. Do you say something, fake it, or keep the peace?",
+			"focus": "agreeableness",
+		},
+		{
+			"id": "conscientiousness_group_trip",
+			"question": "A group trip is coming together and nobody is organizing it. What role do you naturally fall into?",
+			"focus": "conscientiousness",
+		},
+		{
+			"id": "emotional_stability_read_receipt",
+			"question": "You send a vulnerable message and it stays unread longer than expected. What starts happening in your head?",
+			"focus": "emotional stability",
+		},
+	]
 
 
 def _load_existing_sessions(path: Path) -> List[Dict[str, Any]]:
@@ -78,20 +128,98 @@ def run() -> None:
 		"agent": "personality_agent",
 		"mode": "conversation",
 		"user": {"name": ""},
+		"onboarding": {
+			"user_context": {},
+			"questions": [],
+			"answers": [],
+		},
 		"conversation": [],
 		"profile": {},
+		"behavior_updates": [],
 		"notes": [],
 	}
+	thread_id = session_payload["session_id"]
 
 	print("\nSoulSync Personality Agent (chat mode)")
 	print("Type 'exit' anytime to stop.\n")
 
 	user_name = input("Agent: Hi, what should I call you?\nYou: ").strip() or "User"
 	session_payload["user"] = {"name": user_name}
-	print(f"\nAgent: Hi {user_name}. I am your SoulSync personality agent. Tell me something important about yourself.")
+	user_context = _build_dummy_user_context(user_name)
+	session_payload["onboarding"]["user_context"] = user_context
+
+	if skip_agent:
+		onboarding_questions = _default_onboarding_questions()
+	else:
+		onboarding_questions = run_onboarding_question_generator(
+			user_context,
+			thread_id=thread_id,
+		)
+		if len(onboarding_questions) < 5:
+			onboarding_questions = _default_onboarding_questions()
+
+	onboarding_questions = onboarding_questions[:5]
+	session_payload["onboarding"]["questions"] = onboarding_questions
+
+	print(f"\nAgent: Hi {user_name}. I am your SoulSync personality agent. Let's start with a few scenario questions.")
+
+	for index, question in enumerate(onboarding_questions, start=1):
+		print(f"\nAgent: {question['question']}")
+		user_answer = input("You: ").strip()
+		while not user_answer:
+			print("Agent: take your time - even a short answer works.")
+			user_answer = input("You: ").strip()
+
+		session_payload["onboarding"]["answers"].append(
+			{
+				"step": index,
+				"timestamp": _iso_now(),
+				"question": question,
+				"answer": user_answer,
+			}
+		)
+
+		if index < len(onboarding_questions):
+			print("Agent: okay, that tracks.\n")
+		else:
+			print("Agent: that helps a lot. I have enough to shape the rest of what I know.\n")
+
+	if skip_agent:
+		profile_result = None
+		profile_payload = {}
+		profile_raw_output = "SOULSYNC_SKIP_AGENT=true"
+	else:
+		profile_input = {
+			"source": "onboarding",
+			"user_name": user_name,
+			"user_context": user_context,
+			"questions": onboarding_questions,
+			"answers": [
+				{
+					"step": item["step"],
+					"question_id": item["question"].get("id", f"question_{item['step']}") if isinstance(item.get("question"), dict) else f"question_{item['step']}",
+					"question": item["question"].get("question", "") if isinstance(item.get("question"), dict) else "",
+					"focus": item["question"].get("focus", "") if isinstance(item.get("question"), dict) else "",
+					"answer": item["answer"],
+				}
+				for item in session_payload["onboarding"]["answers"]
+			],
+		}
+		profile_result = run_personality_agent(
+			questionnaire_json=json.dumps(profile_input, ensure_ascii=True),
+			thread_id=thread_id,
+		)
+		profile_payload = profile_result.parsed_profile
+		profile_raw_output = profile_result.raw_output
+
+	session_payload["profile"] = profile_payload
+	session_payload["profile_raw_output"] = profile_raw_output
+	session_payload["last_updated_at"] = _iso_now()
+	last_path = _save_or_update_session(session_payload)
+
+	print(f"Agent: Hi {user_name}. I am your SoulSync personality agent. You can keep chatting normally now.")
 
 	turn_no = 0
-	last_path = _save_or_update_session(session_payload)
 
 	while turn_no < max_turns:
 		user_message = input("You: ").strip()
@@ -111,6 +239,7 @@ def run() -> None:
 				conversation_history=session_payload["conversation"],
 				user_message=user_message,
 				user_name=user_name,
+				thread_id=thread_id,
 			)
 			agent_reply = chat_result.assistant_reply
 			memory_update = chat_result.memory_update
@@ -128,23 +257,20 @@ def run() -> None:
 		)
 
 		if not skip_agent:
-			profile_input = {
-				"source": "conversation",
-				"user_name": user_name,
-				"conversation": [
-					{
-						"turn": x["turn"],
-						"user_message": x["user_message"],
-						"assistant_reply": x["assistant_reply"],
-					}
-					for x in session_payload["conversation"]
-				],
-			}
-			profile_result = run_personality_agent(
-				questionnaire_json=json.dumps(profile_input, ensure_ascii=True)
+			behavior_result = run_personality_behavior_update(
+				conversation_history=session_payload["conversation"],
+				user_name=user_name,
+				thread_id=thread_id,
 			)
-			session_payload["profile"] = profile_result.parsed_profile
-			session_payload["profile_raw_output"] = profile_result.raw_output
+			session_payload["behavior_updates"].append(
+				{
+					"turn": turn_no,
+					"timestamp": _iso_now(),
+					"raw_output": behavior_result.raw_output,
+					"behavior_update": behavior_result.behavior_update,
+				}
+			)
+			session_payload["notes"] = session_payload["behavior_updates"][-3:]
 
 		session_payload["last_updated_at"] = _iso_now()
 		session_payload["total_turns"] = turn_no
