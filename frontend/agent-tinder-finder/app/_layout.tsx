@@ -10,6 +10,12 @@ import {
   useFonts,
 } from "@expo-google-fonts/dm-sans";
 import { DMSerifDisplay_400Regular } from "@expo-google-fonts/dm-serif-display";
+import {
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  Inter_800ExtraBold,
+} from "@expo-google-fonts/inter";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -18,6 +24,7 @@ import "react-native-reanimated";
 import * as SystemUI from "expo-system-ui";
 
 import { KindraColors } from "@/constants/kindraTheme";
+import { AuthProvider } from "@/context/AuthContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -44,6 +51,10 @@ export default function RootLayout() {
     DMSans_500Medium,
     DMSans_700Bold,
     DMSerifDisplay_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    Inter_800ExtraBold,
   });
 
   useEffect(() => {
@@ -61,19 +72,27 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={KindraTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="modal"
-          options={{ presentation: "modal", title: "Modal" }}
+    <AuthProvider>
+      <ThemeProvider value={KindraTheme}>
+        <Stack>
+          <Stack.Screen name="splash" options={{ headerShown: false }} />
+          <Stack.Screen name="login" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="forgot-password"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="modal"
+            options={{ presentation: "modal", title: "Modal" }}
+          />
+        </Stack>
+        <StatusBar
+          style="light"
+          translucent={false}
+          backgroundColor={KindraColors.background}
         />
-      </Stack>
-      <StatusBar
-        style="dark"
-        translucent={false}
-        backgroundColor={KindraColors.background}
-      />
-    </ThemeProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }

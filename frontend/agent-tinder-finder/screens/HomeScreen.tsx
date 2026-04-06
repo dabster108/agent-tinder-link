@@ -21,6 +21,8 @@ import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  withRepeat,
+  withSequence,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
@@ -79,6 +81,19 @@ const CARDS: MatchCard[] = [
       "Curious builder with warm humor and a soft spot for spontaneous city adventures.",
     interests: ["Photography", "Coffee", "Product"],
   },
+];
+
+const HERO_DOTS = [
+  { left: 188, top: 24, size: 4, opacity: 0.9 },
+  { left: 222, top: 42, size: 6, opacity: 0.75 },
+  { left: 248, top: 72, size: 4, opacity: 0.78 },
+  { left: 274, top: 104, size: 4, opacity: 0.72 },
+  { left: 210, top: 120, size: 3, opacity: 0.66 },
+  { left: 286, top: 144, size: 4, opacity: 0.74 },
+  { left: 236, top: 162, size: 5, opacity: 0.7 },
+  { left: 300, top: 190, size: 3, opacity: 0.65 },
+  { left: 226, top: 208, size: 4, opacity: 0.78 },
+  { left: 282, top: 232, size: 4, opacity: 0.8 },
 ];
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -140,7 +155,7 @@ function ProfileCard({ card }: { card: MatchCard }) {
       </View>
 
       <LinearGradient
-        colors={["rgba(255,255,255,0)", "rgba(244,246,249,0.9)"]}
+        colors={["rgba(7,13,27,0)", "rgba(7,13,27,0.88)"]}
         start={{ x: 0.5, y: 0.55 }}
         end={{ x: 0.5, y: 1 }}
         style={styles.cardGradient}
@@ -158,6 +173,24 @@ export default function HomeScreen() {
   const translateY = useSharedValue(0);
   const rotate = useSharedValue(0);
   const pulse = useSharedValue(0);
+  const heroDrift = useSharedValue(0);
+
+  React.useEffect(() => {
+    heroDrift.value = withRepeat(
+      withSequence(
+        withTiming(1, {
+          duration: 2200,
+          easing: Easing.inOut(Easing.quad),
+        }),
+        withTiming(0, {
+          duration: 2200,
+          easing: Easing.inOut(Easing.quad),
+        }),
+      ),
+      -1,
+      false,
+    );
+  }, [heroDrift]);
 
   const advance = React.useCallback(() => {
     setIndex((value) => (value + 1) % CARDS.length);
@@ -273,14 +306,41 @@ export default function HomeScreen() {
         : "rgba(231, 76, 60, 0.8)",
   }));
 
+  const heroDotsStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: -4 + heroDrift.value * 8 }],
+    opacity: 0.7 + heroDrift.value * 0.3,
+  }));
+
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaView edges={["top"]} style={styles.safeArea}>
         <View style={styles.header}>
+          <View style={styles.heroGlowLeft} />
+          <View style={styles.heroGlowRight} />
+
+          <Animated.View style={[styles.heroDotsLayer, heroDotsStyle]}>
+            {HERO_DOTS.map((dot, indexDot) => (
+              <View
+                key={`home-hero-dot-${indexDot}`}
+                style={[
+                  styles.heroDot,
+                  {
+                    left: dot.left,
+                    top: dot.top,
+                    width: dot.size,
+                    height: dot.size,
+                    borderRadius: dot.size / 2,
+                    opacity: dot.opacity,
+                  },
+                ]}
+              />
+            ))}
+          </Animated.View>
+
           <View style={styles.headerTopRow}>
             <View style={styles.logoPill}>
               <Ionicons name="sparkles" size={16} color={KindraColors.white} />
-              <Text style={styles.logoText}>Kindra</Text>
+              <Text style={styles.logoText}>SoulSync Update</Text>
             </View>
             <ScalePressable
               style={styles.iconButton}
@@ -296,10 +356,13 @@ export default function HomeScreen() {
             </ScalePressable>
           </View>
 
-          <Text style={styles.headerTitle}>Discover your people</Text>
+          <Text style={styles.headerTitle}>What&apos;s new with SoulSync</Text>
+          <Text style={styles.headerSubtitle}>
+            Swipe picks are now smarter, faster, and tuned to your vibe.
+          </Text>
 
           <View style={styles.aiTag}>
-            <Text style={styles.aiTagText}>✦ AI-powered matching</Text>
+            <Text style={styles.aiTagText}>Swipe section</Text>
           </View>
         </View>
 
@@ -369,13 +432,44 @@ const styles = StyleSheet.create({
     backgroundColor: KindraColors.background,
   },
   header: {
-    backgroundColor: KindraColors.primary,
+    backgroundColor: "#0A0F1A",
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
     overflow: "hidden",
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 26,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(62, 141, 255, 0.2)",
+  },
+  heroGlowLeft: {
+    position: "absolute",
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    top: -110,
+    left: -70,
+    backgroundColor: "rgba(48, 120, 255, 0.13)",
+  },
+  heroGlowRight: {
+    position: "absolute",
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    bottom: -120,
+    right: -90,
+    backgroundColor: "rgba(31, 95, 235, 0.14)",
+  },
+  heroDotsLayer: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  heroDot: {
+    position: "absolute",
+    backgroundColor: "#4C8DFF",
+    shadowColor: "#4C8DFF",
+    shadowOpacity: 0.38,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 0 },
   },
   headerTopRow: {
     flexDirection: "row",
@@ -389,9 +483,9 @@ const styles = StyleSheet.create({
   },
   logoText: {
     color: KindraColors.white,
-    fontFamily: KindraFonts.heading,
-    fontSize: 22,
-    letterSpacing: 0.3,
+    fontFamily: KindraFonts.bodyBold,
+    fontSize: 14,
+    letterSpacing: 0.4,
   },
   iconButton: {
     width: 36,
@@ -402,17 +496,28 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.15)",
   },
   headerTitle: {
-    marginTop: 18,
-    color: KindraColors.white,
-    fontFamily: KindraFonts.heading,
-    fontSize: 28,
-    lineHeight: 35,
+    marginTop: 12,
+    color: KindraColors.primaryMid,
+    fontFamily: "Inter_800ExtraBold",
+    fontSize: 40,
+    lineHeight: 42,
+    letterSpacing: -1.1,
+    maxWidth: 280,
+  },
+  headerSubtitle: {
+    marginTop: 10,
     maxWidth: 250,
+    color: "rgba(234, 240, 255, 0.82)",
+    fontFamily: KindraFonts.body,
+    fontSize: 14,
+    lineHeight: 20,
   },
   aiTag: {
     marginTop: 12,
     alignSelf: "flex-start",
-    backgroundColor: KindraColors.accent,
+    backgroundColor: "rgba(62, 141, 255, 0.2)",
+    borderWidth: 1,
+    borderColor: "rgba(62, 141, 255, 0.4)",
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 50,
@@ -426,7 +531,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingBottom: 116,
-    marginTop: -14,
+    marginTop: 8,
   },
   deckWrap: {
     flex: 1,
@@ -574,7 +679,7 @@ const styles = StyleSheet.create({
   passButton: {
     width: 58,
     height: 58,
-    backgroundColor: "#FFE5E5",
+    backgroundColor: "rgba(255, 91, 127, 0.16)",
   },
   likeButton: {
     width: 72,
@@ -584,6 +689,6 @@ const styles = StyleSheet.create({
   starButton: {
     width: 58,
     height: 58,
-    backgroundColor: KindraColors.accentLight,
+    backgroundColor: "rgba(62, 141, 255, 0.16)",
   },
 });
