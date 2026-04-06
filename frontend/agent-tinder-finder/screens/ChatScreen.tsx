@@ -128,10 +128,57 @@ function TypingIndicatorBubble() {
 
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
+  const [messages, setMessages] = React.useState<Message[]>(MESSAGES);
+  const [draft, setDraft] = React.useState("");
+  const [isTyping, setIsTyping] = React.useState(false);
+  const replyTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (replyTimer.current) {
+        clearTimeout(replyTimer.current);
+      }
+    };
+  }, []);
 
   const onPressAny = React.useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
+
+  const sendMessage = React.useCallback(() => {
+    const trimmed = draft.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    const messageId = `${Date.now()}-sent`;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: messageId,
+        from: "sent",
+        text: trimmed,
+      },
+    ]);
+    setDraft("");
+    setIsTyping(true);
+
+    if (replyTimer.current) {
+      clearTimeout(replyTimer.current);
+    }
+
+    replyTimer.current = setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `${Date.now()}-received`,
+          from: "received",
+          text: "Nice one. I can help you turn that into a stronger opener.",
+        },
+      ]);
+      setIsTyping(false);
+    }, 900);
+  }, [draft]);
 
   return (
     <View style={styles.screen}>
@@ -166,7 +213,7 @@ export default function ChatScreen() {
           </View>
 
           <FlatList
-            data={MESSAGES}
+            data={messages}
             keyExtractor={(item) => item.id}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.messagesContent}
@@ -208,11 +255,13 @@ export default function ChatScreen() {
               </Animated.View>
             )}
             ListFooterComponent={
-              <Animated.View entering={FadeInUp.delay(300).duration(260)}>
-                <View style={[styles.messageRow, styles.receivedRow]}>
-                  <TypingIndicatorBubble />
-                </View>
-              </Animated.View>
+              isTyping ? (
+                <Animated.View entering={FadeInUp.delay(300).duration(260)}>
+                  <View style={[styles.messageRow, styles.receivedRow]}>
+                    <TypingIndicatorBubble />
+                  </View>
+                </Animated.View>
+              ) : null
             }
           />
 
@@ -224,12 +273,22 @@ export default function ChatScreen() {
           >
             <View style={styles.inputRow}>
               <TextInput
+                value={draft}
+                onChangeText={setDraft}
                 placeholder="Write a message"
                 placeholderTextColor={KindraColors.textMuted}
                 style={styles.input}
+                onSubmitEditing={sendMessage}
+                returnKeyType="send"
               />
 
-              <ScalePressable style={styles.sendButton} onPress={onPressAny}>
+              <ScalePressable
+                style={[
+                  styles.sendButton,
+                  !draft.trim().length && styles.sendButtonDisabled,
+                ]}
+                onPress={sendMessage}
+              >
                 <Ionicons
                   name="arrow-up"
                   size={18}
@@ -385,7 +444,7 @@ const styles = StyleSheet.create({
   inputArea: {
     borderTopWidth: 1,
     borderTopColor: KindraColors.border,
-    backgroundColor: KindraColors.white,
+    backgroundColor: KindraColors.card,
     paddingHorizontal: 12,
     paddingTop: 12,
   },
@@ -414,5 +473,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: KindraColors.primaryMid,
     ...KindraShadow,
+  },
+  sendButtonDisabled: {
+    opacity: 0.55,
   },
 });

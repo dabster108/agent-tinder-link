@@ -1,9 +1,16 @@
 import React from "react";
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 
 import { PremiumTabBar } from "@/navigation/PremiumTabBar";
+import { useAuth } from "@/context/AuthContext";
 
 export default function TabLayout() {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Redirect href="/login" />;
+  }
+
   return (
     <Tabs
       tabBar={(props) => <PremiumTabBar {...props} />}

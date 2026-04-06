@@ -14,19 +14,19 @@ export function AppBackground() {
           PremiumTheme.gradient.softViolet,
           PremiumTheme.gradient.softPink,
         ]}
-        locations={[0, 0.44, 0.78, 1]}
-        start={{ x: 0.08, y: 0 }}
-        end={{ x: 0.9, y: 1 }}
+        locations={[0, 0.34, 0.74, 1]}
+        start={{ x: 0.06, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
       <LinearGradient
         colors={[
-          "rgba(255, 255, 255, 0.72)",
-          "rgba(255, 255, 255, 0.82)",
-          "rgba(255, 255, 255, 0.9)",
+          "rgba(4, 9, 19, 0.32)",
+          "rgba(6, 12, 25, 0.48)",
+          "rgba(3, 7, 15, 0.62)",
         ]}
-        start={{ x: 0.2, y: 0 }}
-        end={{ x: 0.8, y: 1 }}
+        start={{ x: 0.12, y: 0 }}
+        end={{ x: 0.92, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
     </>

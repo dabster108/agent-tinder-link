@@ -9,8 +9,9 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
-import {
+import Animated, {
+  FadeIn,
+  FadeInDown,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -139,6 +140,9 @@ export default function MatchesScreen() {
               <View style={styles.header}>
                 <Text style={styles.headerTitle}>Your Matches</Text>
                 <Text style={styles.headerSubtitle}>3 new connections</Text>
+                <View style={styles.headerPill}>
+                  <Text style={styles.headerPillText}>AI-suggested today</Text>
+                </View>
               </View>
 
               <View style={styles.topSection}>
@@ -222,7 +226,7 @@ const styles = StyleSheet.create({
     backgroundColor: KindraColors.background,
   },
   header: {
-    backgroundColor: KindraColors.primaryMid,
+    backgroundColor: KindraColors.primary,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
     overflow: "hidden",
@@ -240,6 +244,21 @@ const styles = StyleSheet.create({
     color: KindraColors.primaryLight,
     fontFamily: KindraFonts.body,
     fontSize: 13,
+  },
+  headerPill: {
+    marginTop: 10,
+    alignSelf: "flex-start",
+    borderWidth: 1,
+    borderColor: "rgba(62, 141, 255, 0.4)",
+    backgroundColor: "rgba(62, 141, 255, 0.2)",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  headerPillText: {
+    color: KindraColors.white,
+    fontFamily: KindraFonts.bodyMedium,
+    fontSize: 11,
   },
   topSection: {
     marginTop: 14,
@@ -262,7 +281,7 @@ const styles = StyleSheet.create({
     borderColor: KindraColors.accent,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: KindraColors.white,
+    backgroundColor: KindraColors.card,
     ...KindraShadow,
   },
   newAvatarCore: {
@@ -271,10 +290,10 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: KindraColors.primaryLight,
+    backgroundColor: "rgba(62, 141, 255, 0.2)",
   },
   newAvatarText: {
-    color: KindraColors.primary,
+    color: KindraColors.white,
     fontFamily: KindraFonts.heading,
     fontSize: 28,
   },
@@ -332,11 +351,11 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: KindraColors.primaryLight,
+    backgroundColor: "rgba(62, 141, 255, 0.22)",
     marginRight: 10,
   },
   rowAvatarText: {
-    color: KindraColors.primary,
+    color: KindraColors.white,
     fontFamily: KindraFonts.heading,
     fontSize: 24,
   },
