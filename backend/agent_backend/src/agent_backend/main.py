@@ -5,10 +5,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
+
 from dotenv import load_dotenv
 
 from agent_backend.crew import (
 	run_onboarding_question_generator,
+	run_matching_agent,
 	run_personality_agent,
 	run_personality_behavior_update,
 	run_personality_chat_turn,
@@ -113,6 +115,79 @@ def _save_or_update_session(payload: Dict[str, Any]) -> Path:
 		encoding="utf-8",
 	)
 	return file_path
+
+
+def _find_best_session_for_username(
+	all_sessions: List[Dict[str, Any]],
+	username: str,
+) -> Dict[str, Any]:
+	target_name = username.strip().lower()
+	matching_sessions: List[Dict[str, Any]] = []
+
+	for session in all_sessions:
+		if not isinstance(session, dict):
+			continue
+		user = session.get("user", {})
+		if not isinstance(user, dict):
+			continue
+		name = str(user.get("name", "")).strip().lower()
+		if name == target_name:
+			matching_sessions.append(session)
+
+	if not matching_sessions:
+		return {}
+
+	def _session_sort_key(session: Dict[str, Any]) -> tuple[int, int, str]:
+		profile = session.get("profile", {})
+		profile_size = len(profile) if isinstance(profile, dict) else 0
+		total_turns = int(session.get("total_turns", 0) or 0)
+		return (profile_size, total_turns, str(session.get("last_updated_at", "")))
+
+	return sorted(matching_sessions, key=_session_sort_key, reverse=True)[0]
+
+
+def run_matching_flow(target_username: str) -> Dict[str, Any]:
+	"""Run matching for one saved username against the rest of the session pool."""
+	all_sessions = _load_existing_sessions(_response_file_path())
+	if not all_sessions:
+		print("No saved sessions were found yet.")
+		return {}
+
+	target_session = _find_best_session_for_username(all_sessions, target_username)
+	if not target_session:
+		print(f"No saved profile found for username: {target_username}")
+		return {}
+
+	target_profile = target_session.get("profile", {})
+	if not isinstance(target_profile, dict) or not target_profile:
+		print(f"Profile for {target_username} is not complete enough for matching yet.")
+		return {}
+
+	result = run_matching_agent(
+		sessions_json=json.dumps(all_sessions, ensure_ascii=True),
+		target_profile_json=json.dumps(target_profile, ensure_ascii=True),
+		target_session_id=str(target_session.get("session_id", "")),
+		thread_id=str(target_session.get("session_id", "")),
+	)
+
+	matches = result.parsed_matches if isinstance(result.parsed_matches, dict) else {}
+	if not matches:
+		print("No matching result was produced.")
+		return {}
+
+	analysis_summary = matches.get("analysis_summary", {}) if isinstance(matches, dict) else {}
+	print(f"\nMatching results for {target_username}")
+	if isinstance(analysis_summary, dict) and analysis_summary:
+		print(json.dumps(analysis_summary, indent=2, ensure_ascii=True))
+
+	for match in matches.get("matches", [])[:3] if isinstance(matches, dict) else []:
+		if not isinstance(match, dict):
+			continue
+		candidate = match.get("candidate_user", {})
+		candidate_name = candidate.get("name", "unknown") if isinstance(candidate, dict) else "unknown"
+		print(f"- {match.get('rank', '?')}: {candidate_name} ({match.get('compatibility_score', 0)}/100)")
+
+	return matches
 
 
 def run() -> None:
@@ -279,9 +354,21 @@ def run() -> None:
 		print(f"Agent: {agent_reply}\n")
 
 	print(f"\nSession saved to: {last_path}")
+
+
+def run_matching_from_cli(username: str) -> None:
+	_load_env()
+	print(f"\nSoulSync matching mode for {username}")
+	run_matching_flow(username)
+
+
+def run_matching_cli() -> None:
+	if len(sys.argv) < 2:
+		print("Usage: match <username>")
+		sys.exit(1)
+
+	run_matching_from_cli(sys.argv[1])
     
-
-
 def train() -> None:
 	print("Training mode is not configured yet for this project.")
 
@@ -301,7 +388,10 @@ def run_with_trigger() -> None:
 
 if __name__ == "__main__":
 	try:
-		run()
+		if len(sys.argv) >= 3 and sys.argv[2].lower() == "match":
+			run_matching_from_cli(sys.argv[1])
+		else:
+			run()
 	except KeyboardInterrupt:
 		print("\nSession cancelled by user.")
 		sys.exit(1)

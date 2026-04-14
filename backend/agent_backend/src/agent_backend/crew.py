@@ -32,6 +32,12 @@ class BehaviorUpdateResult:
 	behavior_update: Dict[str, Any]
 
 
+@dataclass
+class MatchingRunResult:
+	raw_output: str
+	parsed_matches: Dict[str, Any]
+
+
 QUESTION_GENERATION_PROMPT = """
 Generate exactly {question_count} deep personality onboarding questions for SoulSync.
 
@@ -158,6 +164,13 @@ class AgentBackend:
 			verbose=True,
 		)
 
+	@agent
+	def matching_agent(self) -> Agent:
+		return Agent(
+			config=self.agents_config["matching_agent"],
+			verbose=True,
+		)
+
 	@task
 	def build_personality_profile(self) -> Task:
 		return Task(
@@ -173,6 +186,79 @@ class AgentBackend:
 			verbose=True,
 		)
 
+
+@CrewBase
+class MatchingAgent:
+	"""Crew for matching one requesting user against candidate profiles."""
+	agents: List[BaseAgent]
+	tasks: List[Task]
+
+	agents_config = "config/agents.yaml"
+	tasks_config = "config/tasks.yaml"
+
+	@agent
+	def personality_agent(self) -> Agent:
+		return Agent(
+			config=self.agents_config["personality_agent"],
+			verbose=True,
+		)
+
+	@agent
+	def matching_agent(self) -> Agent:
+		return Agent(
+			config=self.agents_config["matching_agent"],
+			verbose=True,
+		)
+
+	@task
+	def find_compatible_matches(self) -> Task:
+		return Task(
+			config=self.tasks_config["find_compatible_matches"],
+		)
+	
+	@crew
+	def crew(self) -> Crew:
+		return Crew(
+			agents=self.agents,
+			tasks=self.tasks,
+			process=Process.sequential,
+			verbose=True,
+		)
+
+
+def run_matching_agent(
+	sessions_json: str,
+	target_profile_json: str,
+	target_session_id: str,
+	thread_id: str | None = None,
+) -> MatchingRunResult:
+	try:
+		crew_instance = MatchingAgent().crew()
+		_enable_crewai_tracking(crew_instance)
+		opik_args = {"trace": {"thread_id": thread_id}} if thread_id else None
+
+		output = crew_instance.kickoff(
+			inputs={
+				"sessions_json": sessions_json,
+				"target_profile_json": target_profile_json,
+				"target_session_id": target_session_id,
+			},
+			opik_args=opik_args,
+		)
+
+		raw = getattr(output, "raw", None)
+		if raw is None:
+			raw = str(output)
+
+		return MatchingRunResult(
+			raw_output=raw,
+			parsed_matches=extract_json_object(raw),
+		)
+	except Exception as exc:  # noqa: BLE001
+		return MatchingRunResult(
+			raw_output=f"ERROR: {exc}",
+			parsed_matches={},
+		)
 
 def extract_json_object(raw_text: str) -> Dict[str, Any]:
 	"""Parse model output into JSON, even if extra text is included."""
