@@ -2543,5 +2543,209 @@
     "behavior_updates": [],
     "notes": [],
     "profile_raw_output": "ERROR: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+  },
+  {
+    "session_id": "personality-chat-20260415143651",
+    "created_at": "2026-04-15T14:36:51.834266+00:00",
+    "last_updated_at": "2026-04-15T14:44:35.590890+00:00",
+    "agent": "personality_agent",
+    "mode": "conversation",
+    "user": {
+      "name": "surabhi"
+    },
+    "onboarding": {
+      "user_context": {
+        "name": "surabhi",
+        "age": "unknown",
+        "location": "unknown",
+        "interests": [],
+        "lifestyle": [],
+        "relationship_goals": [],
+        "account_notes": [
+          "No signup profile details have been captured yet.",
+          "Use vivid universal scenarios if the account context is sparse."
+        ]
+      },
+      "questions": [
+        {
+          "id": "spontaneous_friday_night",
+          "question": "Okay Surabhi, imagine it's a Friday night, your plans just fell through, and a friend texts you with an exciting, completely spontaneous idea for something totally new to try tonight. What's your honest, immediate reaction and what do you actually do?",
+          "focus": "Openness to spontaneity, adaptability, thrill-seeking vs. comfort with routine"
+        },
+        {
+          "id": "friend_rough_week",
+          "question": "Your closest friend calls you, clearly upset, saying they've had a really rough week and just need to talk. What's the very first thing that comes to your mind, and how do you actually show up for them?",
+          "focus": "Empathy, support style (listener, problem-solver, comforter), emotional regulation"
+        },
+        {
+          "id": "perfect_day_off",
+          "question": "It's a rare day off with absolutely no obligations, no chores, no one needing anything from you. Walk me through your perfect, ideal version of how you'd spend that day from start to finish.",
+          "focus": "Introversion/Extraversion, self-care, hobbies, need for solitude vs. social interaction"
+        },
+        {
+          "id": "group_trip_unexpected",
+          "question": "Imagine you're on a trip with a small group of friends, and something unexpected comes up \u2013 maybe a reservation gets cancelled last minute, or you get a bit lost. What role do you naturally fall into within the group to handle the situation?",
+          "focus": "Leadership, adaptability, collaboration, crisis management, initiative"
+        },
+        {
+          "id": "new_person_favorite_thing",
+          "question": "Let's say you're getting to know someone new, and you discover they've never experienced something you absolutely adore \u2013 maybe it's your favorite book, a type of cuisine you love, or a particular outdoor activity. What's your impulse, and what do you do?",
+          "focus": "Enthusiasm, sharing passions, open-mindedness, desire to connect, respect for different tastes"
+        }
+      ],
+      "answers": [
+        {
+          "step": 1,
+          "timestamp": "2026-04-15T14:39:08.134762+00:00",
+          "question": {
+            "id": "spontaneous_friday_night",
+            "question": "Okay Surabhi, imagine it's a Friday night, your plans just fell through, and a friend texts you with an exciting, completely spontaneous idea for something totally new to try tonight. What's your honest, immediate reaction and what do you actually do?",
+            "focus": "Openness to spontaneity, adaptability, thrill-seeking vs. comfort with routine"
+          },
+          "answer": "I would try to see if i could take my days off at work and if it's possible then i would definately go to that trip but if i can't take my days off i would not go"
+        },
+        {
+          "step": 2,
+          "timestamp": "2026-04-15T14:39:41.065614+00:00",
+          "question": {
+            "id": "friend_rough_week",
+            "question": "Your closest friend calls you, clearly upset, saying they've had a really rough week and just need to talk. What's the very first thing that comes to your mind, and how do you actually show up for them?",
+            "focus": "Empathy, support style (listener, problem-solver, comforter), emotional regulation"
+          },
+          "answer": "i would try to have a nice chat with him and try to know what's his problme and see if i could help him"
+        },
+        {
+          "step": 3,
+          "timestamp": "2026-04-15T14:41:49.937760+00:00",
+          "question": {
+            "id": "perfect_day_off",
+            "question": "It's a rare day off with absolutely no obligations, no chores, no one needing anything from you. Walk me through your perfect, ideal version of how you'd spend that day from start to finish.",
+            "focus": "Introversion/Extraversion, self-care, hobbies, need for solitude vs. social interaction"
+          },
+          "answer": "i would try to do some mini trip with my partners or my friends"
+        },
+        {
+          "step": 4,
+          "timestamp": "2026-04-15T14:42:50.352484+00:00",
+          "question": {
+            "id": "group_trip_unexpected",
+            "question": "Imagine you're on a trip with a small group of friends, and something unexpected comes up \u2013 maybe a reservation gets cancelled last minute, or you get a bit lost. What role do you naturally fall into within the group to handle the situation?",
+            "focus": "Leadership, adaptability, collaboration, crisis management, initiative"
+          },
+          "answer": "I would suggest them the alternative and if we are in a place that i am the most familiar then i would take the initiative to have our another destination"
+        },
+        {
+          "step": 5,
+          "timestamp": "2026-04-15T14:43:47.101388+00:00",
+          "question": {
+            "id": "new_person_favorite_thing",
+            "question": "Let's say you're getting to know someone new, and you discover they've never experienced something you absolutely adore \u2013 maybe it's your favorite book, a type of cuisine you love, or a particular outdoor activity. What's your impulse, and what do you do?",
+            "focus": "Enthusiasm, sharing passions, open-mindedness, desire to connect, respect for different tastes"
+          },
+          "answer": "I would make them try to experience it with me. i would like them to know why i like that experience so much. basically i want them to experience that with my perspective"
+        }
+      ]
+    },
+    "conversation": [],
+    "profile": {
+      "summary": "Surabhi is a socially engaged and responsible individual who values deep connections formed through shared experiences. She is proactive in group settings and offers practical support to her friends, balancing a desire for spontaneity with a strong commitment to her obligations. She finds joy in sharing her passions and helping others see the world through her enthusiastic perspective.",
+      "big_five": {
+        "openness": "medium \u2014 While expressing a desire to \"definitely go\" to a spontaneous trip, the action is contingent on practical considerations (\"if i could take my days off at work\"), indicating a measured approach to new experiences. Her desire to share her perspective (Q5) suggests openness to connection but with a strong personal filter.",
+        "extraversion": "high \u2014 Her ideal day involves \"mini trip with my partners or my friends\" (Q3), she actively engages to help a friend (Q2), and enthusiastically seeks to share experiences with new people (Q5). She recharges through social interaction and shared activities.",
+        "agreeableness": "high \u2014 She immediately wants to understand and help a friend in distress (Q2), and strives to share positive experiences with others (Q5), indicating empathy, cooperation, and a desire for positive social interactions.",
+        "conscientiousness": "high \u2014 She prioritizes work commitments over spontaneous plans (Q1) and takes initiative to find solutions in unexpected group situations (Q4), demonstrating a strong sense of responsibility and a proactive, organized approach.",
+        "emotional_stability": "medium-high \u2014 She responds to situations with a practical, problem-solving mindset (Q2, Q4) and expresses enthusiasm for sharing her passions (Q5). There are no overt signs of volatility or difficulty regulating emotions; rather, a stable and engaged demeanor."
+      },
+      "values": [
+        "Loyalty and active support in friendships (behavioral: offers to chat and help a friend in need)",
+        "Shared experiences and connection (behavioral: plans mini-trips with partners/friends, eager to share beloved activities)",
+        "Responsibility and commitment (behavioral: prioritizes work over spontaneous trips)",
+        "Proactive problem-solving and leadership within one's comfort/expertise (behavioral: suggests alternatives, takes initiative if familiar)",
+        "Authentic sharing of personal passions (behavioral: wants others to experience things from her perspective)"
+      ],
+      "communication_style": {
+        "tone": "Engaged, helpful, and enthusiastic.",
+        "directness": "Direct and solution-oriented, clearly stating intentions and proposed actions (e.g., \"I would try to have a nice chat...and see if i could help him,\" \"I would suggest them the alternative\").",
+        "preferred_channel": "Verbal conversation and physical presence, particularly when supporting a friend or sharing an experience.",
+        "notes": "Communicates with a focus on action and shared understanding, often emphasizing her perspective when sharing."
+      },
+      "behavior_patterns": {
+        "decision_making": "Deliberate and practical when responsibilities are involved, weighing options and consequences (Q1). In unexpected group situations, she is fast and decisive in offering solutions or taking charge if confident (Q4).",
+        "social_energy": "Recharges through social connection and shared activities; her ideal day involves being with partners or friends (Q3). She is energized by helping others and contributing to group harmony.",
+        "stress_response": "Under pressure or in unexpected situations, she becomes proactive and solution-focused, suggesting alternatives and taking initiative (Q4).",
+        "conflict_style": "Likely approaches disagreement by seeking to understand the 'problem' and finding a path to 'help' or resolve it, preferring constructive engagement over avoidance (inferred from Q2 and Q4)."
+      },
+      "relationship_preferences": {
+        "short_term": "Needs someone who is receptive to active conversation and practical support. Appreciates an open-minded attitude towards trying new things she enjoys.",
+        "long_term": "Seeks a partner who values shared adventures and experiences, demonstrating responsibility and a willingness to engage with her passions. Desires a partner who is open to understanding her unique perspective.",
+        "boundaries": [
+          "Respect for personal and professional commitments."
+        ],
+        "love_languages": [
+          "Acts of Service (offers help to a friend, takes initiative in problem-solving)",
+          "Quality Time (ideal day involves trips with partners/friends, sharing experiences)",
+          "Words of Affirmation (wants to explain 'why I like that experience so much,' implying a desire for her perspective to be understood and valued)"
+        ]
+      },
+      "revealed_vs_stated": {
+        "stated": [
+          "Wants to be spontaneous if circumstances allow (Q1).",
+          "Wants to help friends in need by understanding their problems (Q2).",
+          "Values spending a day off on a 'mini trip' with loved ones (Q3).",
+          "Willing to suggest alternatives and take initiative in group problems (Q4).",
+          "Desires to share beloved experiences and her perspective with new people (Q5)."
+        ],
+        "revealed": [
+          "Prioritizes existing work responsibilities over spontaneous opportunities, showing strong conscientiousness (Q1).",
+          "Offers empathy through active listening and practical, problem-solving assistance (Q2).",
+          "Recharges socially and finds fulfillment in shared activities (Q3).",
+          "Functions effectively as a solution-oriented leader, especially in familiar contexts (Q4).",
+          "Seeks to create shared understanding and connection through the lens of her personal experiences (Q5)."
+        ],
+        "contradictions": [
+          "A mild contradiction between the stated immediate desire to 'definitely go' on a spontaneous trip and the revealed practical constraint of 'if i could take my days off at work', suggesting spontaneity is desired but responsibility is paramount."
+        ]
+      },
+      "green_flags": [
+        "Offers engaged, practical support to friends during tough times.",
+        "Takes initiative and offers solutions when faced with unexpected group challenges.",
+        "Eagerly shares personal passions and seeks to create meaningful shared experiences.",
+        "Demonstrates strong responsibility and commitment in daily life."
+      ],
+      "red_flags": [],
+      "growth_edges": [
+        "Exploring how to embrace spontaneity more freely, perhaps by proactively scheduling \"free\" time or smaller, less disruptive new experiences.",
+        "Reflecting on whether the desire for others to experience things from her 'perspective' (Q5) sometimes limits the space for others' unique interpretations or preferences."
+      ],
+      "attachment_signals": {
+        "likely_style": "secure",
+        "confidence": "medium",
+        "evidence": "Responds to a friend in distress with an offer of practical help and active listening (Q2), indicating comfort with closeness and an effective response to others' needs. Seeks connection through shared experiences (Q3, Q5), suggesting comfort with intimacy. The responsible approach to spontaneity (Q1) aligns with a secure individual who balances needs with commitments."
+      },
+      "compatibility_hints": {
+        "works_well_with": [
+          "Partners who are also responsible and understand the importance of commitments.",
+          "Individuals who enjoy shared activities and are open to trying new experiences together.",
+          "People who appreciate clear communication and practical support.",
+          "Someone who is receptive to hearing and engaging with her passions and perspectives."
+        ],
+        "may_clash_with": [
+          "Highly impulsive individuals who disregard practical implications for spontaneity.",
+          "Partners who prefer significant solitude or very independent leisure activities.",
+          "Those who are passive and rarely take initiative in social or problem-solving situations."
+        ]
+      },
+      "curiosity_queue": [
+        "You mentioned taking a 'mini trip' as your ideal day off. What's one of your favorite mini trip memories, and what made it so special?",
+        "When you're trying to help a friend, do you find it's more about offering advice, or just being there to listen?",
+        "You enjoy sharing your favorite experiences. Is there anything you used to love that you no longer feel the same way about, and why do you think that changed?",
+        "When you take initiative in a group, how do you know if others are open to your suggestions or if they'd prefer to handle things differently?",
+        "Beyond work, what other commitments in your life are important to you, and how do you ensure you honor them?"
+      ],
+      "working_hypothesis": "Surabhi is a conscientious and warm individual who thrives on shared experiences and meaningful connections. Her sense of responsibility guides her decisions, but she has a clear desire for adventurous, social engagement. She demonstrates natural leadership in problem-solving and expresses her affection through acts of service and by sharing her passions, seeking validation and deeper connection through her unique perspective. The central tension lies between her structured responsibility and her underlying desire for spontaneous, shared exploration."
+    },
+    "behavior_updates": [],
+    "notes": [],
+    "profile_raw_output": "```json\n{\n  \"summary\": \"Surabhi is a socially engaged and responsible individual who values deep connections formed through shared experiences. She is proactive in group settings and offers practical support to her friends, balancing a desire for spontaneity with a strong commitment to her obligations. She finds joy in sharing her passions and helping others see the world through her enthusiastic perspective.\",\n  \"big_five\": {\n    \"openness\": \"medium \u2014 While expressing a desire to \\\"definitely go\\\" to a spontaneous trip, the action is contingent on practical considerations (\\\"if i could take my days off at work\\\"), indicating a measured approach to new experiences. Her desire to share her perspective (Q5) suggests openness to connection but with a strong personal filter.\",\n    \"extraversion\": \"high \u2014 Her ideal day involves \\\"mini trip with my partners or my friends\\\" (Q3), she actively engages to help a friend (Q2), and enthusiastically seeks to share experiences with new people (Q5). She recharges through social interaction and shared activities.\",\n    \"agreeableness\": \"high \u2014 She immediately wants to understand and help a friend in distress (Q2), and strives to share positive experiences with others (Q5), indicating empathy, cooperation, and a desire for positive social interactions.\",\n    \"conscientiousness\": \"high \u2014 She prioritizes work commitments over spontaneous plans (Q1) and takes initiative to find solutions in unexpected group situations (Q4), demonstrating a strong sense of responsibility and a proactive, organized approach.\",\n    \"emotional_stability\": \"medium-high \u2014 She responds to situations with a practical, problem-solving mindset (Q2, Q4) and expresses enthusiasm for sharing her passions (Q5). There are no overt signs of volatility or difficulty regulating emotions; rather, a stable and engaged demeanor.\"\n  },\n  \"values\": [\n    \"Loyalty and active support in friendships (behavioral: offers to chat and help a friend in need)\",\n    \"Shared experiences and connection (behavioral: plans mini-trips with partners/friends, eager to share beloved activities)\",\n    \"Responsibility and commitment (behavioral: prioritizes work over spontaneous trips)\",\n    \"Proactive problem-solving and leadership within one's comfort/expertise (behavioral: suggests alternatives, takes initiative if familiar)\",\n    \"Authentic sharing of personal passions (behavioral: wants others to experience things from her perspective)\"\n  ],\n  \"communication_style\": {\n    \"tone\": \"Engaged, helpful, and enthusiastic.\",\n    \"directness\": \"Direct and solution-oriented, clearly stating intentions and proposed actions (e.g., \\\"I would try to have a nice chat...and see if i could help him,\\\" \\\"I would suggest them the alternative\\\").\",\n    \"preferred_channel\": \"Verbal conversation and physical presence, particularly when supporting a friend or sharing an experience.\",\n    \"notes\": \"Communicates with a focus on action and shared understanding, often emphasizing her perspective when sharing.\"\n  },\n  \"behavior_patterns\": {\n    \"decision_making\": \"Deliberate and practical when responsibilities are involved, weighing options and consequences (Q1). In unexpected group situations, she is fast and decisive in offering solutions or taking charge if confident (Q4).\",\n    \"social_energy\": \"Recharges through social connection and shared activities; her ideal day involves being with partners or friends (Q3). She is energized by helping others and contributing to group harmony.\",\n    \"stress_response\": \"Under pressure or in unexpected situations, she becomes proactive and solution-focused, suggesting alternatives and taking initiative (Q4).\",\n    \"conflict_style\": \"Likely approaches disagreement by seeking to understand the 'problem' and finding a path to 'help' or resolve it, preferring constructive engagement over avoidance (inferred from Q2 and Q4).\"\n  },\n  \"relationship_preferences\": {\n    \"short_term\": \"Needs someone who is receptive to active conversation and practical support. Appreciates an open-minded attitude towards trying new things she enjoys.\",\n    \"long_term\": \"Seeks a partner who values shared adventures and experiences, demonstrating responsibility and a willingness to engage with her passions. Desires a partner who is open to understanding her unique perspective.\",\n    \"boundaries\": [\n      \"Respect for personal and professional commitments.\"\n    ],\n    \"love_languages\": [\n      \"Acts of Service (offers help to a friend, takes initiative in problem-solving)\",\n      \"Quality Time (ideal day involves trips with partners/friends, sharing experiences)\",\n      \"Words of Affirmation (wants to explain 'why I like that experience so much,' implying a desire for her perspective to be understood and valued)\"\n    ]\n  },\n  \"revealed_vs_stated\": {\n    \"stated\": [\n      \"Wants to be spontaneous if circumstances allow (Q1).\",\n      \"Wants to help friends in need by understanding their problems (Q2).\",\n      \"Values spending a day off on a 'mini trip' with loved ones (Q3).\",\n      \"Willing to suggest alternatives and take initiative in group problems (Q4).\",\n      \"Desires to share beloved experiences and her perspective with new people (Q5).\"\n    ],\n    \"revealed\": [\n      \"Prioritizes existing work responsibilities over spontaneous opportunities, showing strong conscientiousness (Q1).\",\n      \"Offers empathy through active listening and practical, problem-solving assistance (Q2).\",\n      \"Recharges socially and finds fulfillment in shared activities (Q3).\",\n      \"Functions effectively as a solution-oriented leader, especially in familiar contexts (Q4).\",\n      \"Seeks to create shared understanding and connection through the lens of her personal experiences (Q5).\"\n    ],\n    \"contradictions\": [\n      \"A mild contradiction between the stated immediate desire to 'definitely go' on a spontaneous trip and the revealed practical constraint of 'if i could take my days off at work', suggesting spontaneity is desired but responsibility is paramount.\"\n    ]\n  },\n  \"green_flags\": [\n    \"Offers engaged, practical support to friends during tough times.\",\n    \"Takes initiative and offers solutions when faced with unexpected group challenges.\",\n    \"Eagerly shares personal passions and seeks to create meaningful shared experiences.\",\n    \"Demonstrates strong responsibility and commitment in daily life.\"\n  ],\n  \"red_flags\": [],\n  \"growth_edges\": [\n    \"Exploring how to embrace spontaneity more freely, perhaps by proactively scheduling \\\"free\\\" time or smaller, less disruptive new experiences.\",\n    \"Reflecting on whether the desire for others to experience things from her 'perspective' (Q5) sometimes limits the space for others' unique interpretations or preferences.\"\n  ],\n  \"attachment_signals\": {\n    \"likely_style\": \"secure\",\n    \"confidence\": \"medium\",\n    \"evidence\": \"Responds to a friend in distress with an offer of practical help and active listening (Q2), indicating comfort with closeness and an effective response to others' needs. Seeks connection through shared experiences (Q3, Q5), suggesting comfort with intimacy. The responsible approach to spontaneity (Q1) aligns with a secure individual who balances needs with commitments.\"\n  },\n  \"compatibility_hints\": {\n    \"works_well_with\": [\n      \"Partners who are also responsible and understand the importance of commitments.\",\n      \"Individuals who enjoy shared activities and are open to trying new experiences together.\",\n      \"People who appreciate clear communication and practical support.\",\n      \"Someone who is receptive to hearing and engaging with her passions and perspectives.\"\n    ],\n    \"may_clash_with\": [\n      \"Highly impulsive individuals who disregard practical implications for spontaneity.\",\n      \"Partners who prefer significant solitude or very independent leisure activities.\",\n      \"Those who are passive and rarely take initiative in social or problem-solving situations.\"\n    ]\n  },\n  \"curiosity_queue\": [\n    \"You mentioned taking a 'mini trip' as your ideal day off. What's one of your favorite mini trip memories, and what made it so special?\",\n    \"When you're trying to help a friend, do you find it's more about offering advice, or just being there to listen?\",\n    \"You enjoy sharing your favorite experiences. Is there anything you used to love that you no longer feel the same way about, and why do you think that changed?\",\n    \"When you take initiative in a group, how do you know if others are open to your suggestions or if they'd prefer to handle things differently?\",\n    \"Beyond work, what other commitments in your life are important to you, and how do you ensure you honor them?\"\n  ],\n  \"working_hypothesis\": \"Surabhi is a conscientious and warm individual who thrives on shared experiences and meaningful connections. Her sense of responsibility guides her decisions, but she has a clear desire for adventurous, social engagement. She demonstrates natural leadership in problem-solving and expresses her affection through acts of service and by sharing her passions, seeking validation and deeper connection through her unique perspective. The central tension lies between her structured responsibility and her underlying desire for spontaneous, shared exploration.\"\n}\n```"
   }
 ]
