@@ -180,3 +180,208 @@ update_personality_from_behavior:
     A single valid JSON object matching the exact schema above.
     Just the JSON object, starting with { and ending with }.
   agent: personality_agent
+
+find_compatible_matches:
+  description: >
+    You have been given the requesting user's profile plus the full
+    SoulSync session database as JSON.
+    Your job is to find the best opposite-gender matches for that one
+    requesting user, ranked by conversational compatibility.
+
+    THE SESSION DATA:
+    {sessions_json}
+
+    TARGET USER PROFILE:
+    {target_profile_json}
+
+    TARGET USER SESSION ID:
+    {target_session_id}
+
+    ─────────────────────────────────────────────
+    STEP 1 — IDENTIFY THE TARGET USER AND USABLE CANDIDATES
+    ─────────────────────────────────────────────
+
+    First, identify the requesting user's profile from target_profile_json
+    and target_session_id. That is the only user you are finding matches for.
+
+    Then go through every session in the data. For each session:
+
+    a) Check if the profile object is non-empty and has at least a
+       summary, values, and communication_style filled. If not, mark
+       this user as INSUFFICIENT DATA and exclude them.
+
+    b) Extract the user's name from session.user.name
+
+    c) Determine gender. Look for:
+       - Pronouns used by the agent in conversation turns
+         ("him", "his", "he" = male / "her", "she" = female)
+       - Explicit context clues in profile fields
+       - If genuinely ambiguous, mark as UNKNOWN GENDER and exclude.
+
+    d) Check for age preference. Search all profile fields,
+       compatibility_hints, and conversation turns for any mention of
+       age, life stage, maturity, or similar. Note what you find or
+       mark as NOT STATED.
+
+    e) If a user has multiple sessions, use the session with the most
+       complete profile (most fields filled, highest total_turns).
+
+     f) Exclude the target user from the candidate pool. You are not
+       matching the user against themselves.
+
+    ─────────────────────────────────────────────
+    STEP 2 — BUILD CANDIDATE PAIRS
+    ─────────────────────────────────────────────
+
+    From your usable profiles, keep only the profiles that are opposite
+    gender to the target user. Do not pair same-gender profiles. Do not
+    pair profiles marked INSUFFICIENT DATA.
+
+    For each candidate, note:
+    - Target user name + gender + attachment style
+    - Candidate name + gender + attachment style
+    - Any age preferences that need checking
+
+    ─────────────────────────────────────────────
+    STEP 3 — SCORE EACH PAIR (0–100)
+    ─────────────────────────────────────────────
+
+    For every target-user-to-candidate pair, evaluate compatibility
+    across these six dimensions. Each dimension contributes to a total
+    score.
+
+    DIMENSION 1 — CONVERSATION ENERGY MATCH (0–20 pts)
+    Can these two people sustain a real conversation?
+    Look at: curiosity levels, depth of answers, how much they
+    elaborate vs. give one-liners, whether they ask questions back,
+    their engagement style. Two people who both go deep = high score.
+    One deep + one surface-level = moderate. Both surface-level = low.
+
+    DIMENSION 2 — COMMUNICATION STYLE COMPATIBILITY (0–20 pts)
+    Do their styles complement each other?
+    Compare directness scores, tone, preferred channels, and notes
+    from each profile's communication_style field.
+    Complementary is better than identical. Direct + warm = great.
+    Two highly guarded communicators = harder. Look for styles that
+    would make the other person feel heard, not exhausted.
+
+    DIMENSION 3 — VALUES ALIGNMENT (0–20 pts)
+    Do their core values create common ground for conversation?
+    They don't need to be identical. They need to be compatible.
+    Two people who both value growth will have things to discuss even
+    if one expresses it through music and one through code.
+    Directly contradictory values (e.g. one values spontaneity above
+    all, the other is rigidly routine-dependent) = low score here.
+
+    DIMENSION 4 — ATTACHMENT COMPATIBILITY (0–20 pts)
+    Use the attachment_signals from each profile.
+    Secure + Secure = 20 pts
+    Secure + Anxious = 15 pts (can work with the right dynamic)
+    Secure + Avoidant = 12 pts (possible but needs awareness)
+    Anxious + Anxious = 8 pts (both need reassurance, neither gives it)
+    Avoidant + Anxious = 5 pts (classic push-pull, flag this clearly)
+    Avoidant + Avoidant = 6 pts (no one initiates depth)
+    Unknown = 10 pts (neutral, flag as uncertain)
+
+    DIMENSION 5 — REVEALED NEEDS CROSSOVER (0–10 pts)
+    This is the deepest signal. Look at the target user's
+    revealed_vs_stated section — specifically the "revealed" and
+    "contradictions" fields — and compare it to what the candidate
+    naturally offers.
+    Ask: does what the target user actually needs match what the
+    candidate naturally offers, even if neither stated it directly?
+    Example: Sita's revealed need is "consistent, sustained interest
+    from someone who won't abandon her." Ram's revealed pattern is
+    "intrinsic mastery drive — once committed to something, he does
+    not stop." That crossover is worth points even if neither said it.
+    Award 0–10 based on how strong the crossover is.
+
+    DIMENSION 6 — FRICTION POINTS (subtract 0–10 pts)
+    Look at the target user's compatibility_hints.may_clash_with and
+    the candidate's green_flags / red_flags / growth_edges.
+    If the target user's "may clash with" list directly describes the
+    candidate, deduct points. If the candidate's red_flags are
+    dealbreakers for the target user, deduct points. Be specific about
+    what friction you found.
+
+    FINAL SCORE = sum of all dimensions (max 100).
+
+    ─────────────────────────────────────────────
+    STEP 4 — PRODUCE THE OUTPUT
+    ─────────────────────────────────────────────
+
+    Return ONLY valid JSON. No markdown. No code fences.
+    No explanation before or after. Start with { end with }.
+
+    Output schema:
+
+    {
+      "analysis_summary": {
+        "total_sessions_reviewed": <number>,
+        "profiles_with_sufficient_data": <number>,
+        "profiles_excluded_insufficient_data": ["name1", "name2"],
+        "profiles_excluded_unknown_gender": ["name1"],
+        "target_user_name": "...",
+        "target_user_gender": "male/female/unknown",
+        "target_user_attachment_style": "...",
+        "male_candidates": ["name1", "name2"],
+        "female_candidates": ["name1", "name2"],
+        "total_pairs_evaluated": <number>
+      },
+
+      "matches": [
+        {
+          "rank": 1,
+          "target_user": {
+            "name": "...",
+            "gender": "male/female",
+            "attachment_style": "...",
+            "age_preference": "not stated / prefers X"
+          },
+          "candidate_user": {
+            "name": "...",
+            "gender": "male/female",
+            "attachment_style": "...",
+            "age_preference": "not stated / prefers X"
+          },
+          "compatibility_score": <0-100>,
+          "score_breakdown": {
+            "conversation_energy": <0-20>,
+            "communication_style": <0-20>,
+            "values_alignment": <0-20>,
+            "attachment_compatibility": <0-20>,
+            "revealed_needs_crossover": <0-10>,
+            "friction_deduction": <0 to -10>
+          },
+          "why_they_match": "3-4 sentences explaining the specific,
+            behavioral reasons these two people would have great
+            conversations. Reference actual profile data — quotes,
+            specific traits, revealed needs. Not generic praise.",
+          "what_theyd_talk_about": "2-3 concrete conversation topics
+            or dynamics that would naturally emerge between them,
+            inferred from their actual profiles.",
+          "the_honest_flag": "One thing to be genuinely aware of.
+            The real friction point or growth edge in this pairing.
+            Stated honestly, not softened.",
+          "age_check": "Both unknown / Compatible / Flag: [reason]",
+          "verdict": "STRONG MATCH / GOOD MATCH / POSSIBLE MATCH / NO MATCH"
+        }
+      ],
+
+      "excluded_profiles": [
+        {
+          "name": "...",
+          "reason": "insufficient_data / unknown_gender / rate_limit_error"
+        }
+      ]
+    }
+
+  expected_output: >
+    A single valid JSON object matching the exact schema above.
+    No markdown. No code fences. No explanation before or after.
+    Rankings must go from highest to lowest compatibility score.
+    Every "why_they_match" field must reference specific details
+    from the actual profile data — not generic statements.
+    The output must be honest: if no strong matches exist in the
+    data, say so clearly rather than inflating weak pairings.
+  agent: matching_agent

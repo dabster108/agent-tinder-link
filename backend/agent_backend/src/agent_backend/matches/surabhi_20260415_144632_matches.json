@@ -1,0 +1,221 @@
+{
+  "username": "surabhi",
+  "generated_at": "2026-04-15T14:46:32.618209+00:00",
+  "matches": {
+    "analysis_summary": {
+      "total_sessions_reviewed": 15,
+      "profiles_with_sufficient_data": 7,
+      "profiles_excluded_insufficient_data": [
+        "DabsterMan",
+        "hari",
+        "sita",
+        "geeta",
+        "deepika",
+        "diskhya"
+      ],
+      "profiles_excluded_unknown_gender": [
+        "packman",
+        "diku"
+      ],
+      "target_user_name": "surabhi",
+      "target_user_gender": "female",
+      "target_user_attachment_style": "secure",
+      "male_candidates": [
+        "ram",
+        "harry",
+        "john",
+        "kevin",
+        "mike"
+      ],
+      "female_candidates": [
+        "sita"
+      ],
+      "total_pairs_evaluated": 5
+    },
+    "matches": [
+      {
+        "rank": 1,
+        "target_user": {
+          "name": "surabhi",
+          "gender": "female",
+          "attachment_style": "secure",
+          "age_preference": "not stated"
+        },
+        "candidate_user": {
+          "name": "mike",
+          "gender": "male",
+          "attachment_style": "secure",
+          "age_preference": "not stated"
+        },
+        "compatibility_score": 88,
+        "score_breakdown": {
+          "conversation_energy": 19,
+          "communication_style": 19,
+          "values_alignment": 20,
+          "attachment_compatibility": 20,
+          "revealed_needs_crossover": 10,
+          "friction_deduction": 0
+        },
+        "why_they_match": "Surabhi and Mike are both securely attached individuals who prioritize genuine connections and shared experiences. Mike's 'warm, inviting, and supportive' communication style, along with his capacity for 'active listening and creating a safe space,' would perfectly complement Surabhi's enthusiastic nature and desire to 'share her perspective' and feel understood. Both thrive on spontaneity, with Mike embracing 'spontaneous plans' and Surabhi valuing 'memorable shared experiences,' suggesting a dynamic of shared adventure tempered by mutual respect for individual needs.",
+        "what_theyd_talk_about": "Their shared adventures, personal growth through hobbies like playing guitar (for Mike) or 'nerdy hobbies' (for Surabhi), and how they navigate supporting friends emotionally. They could also deeply discuss the importance of fostering genuine connections and community, as Mike states 'network and connections are everything'.",
+        "the_honest_flag": "Mike's past eagerness to rush to the matching phase (revealed in his growth edges) might indicate a desire for quick outcomes, which Surabhi's desire for 'deep connections' and 'shared understanding' will need to navigate patiently.",
+        "age_check": "Both unknown",
+        "verdict": "STRONG MATCH"
+      },
+      {
+        "rank": 2,
+        "target_user": {
+          "name": "surabhi",
+          "gender": "female",
+          "attachment_style": "secure",
+          "age_preference": "not stated"
+        },
+        "candidate_user": {
+          "name": "harry",
+          "gender": "male",
+          "attachment_style": "secure",
+          "age_preference": "not stated"
+        },
+        "compatibility_score": 81,
+        "score_breakdown": {
+          "conversation_energy": 18,
+          "communication_style": 17,
+          "values_alignment": 19,
+          "attachment_compatibility": 20,
+          "revealed_needs_crossover": 9,
+          "friction_deduction": -2
+        },
+        "why_they_match": "Surabhi and Harry are both securely attached individuals who share a strong drive for personal growth and cultivating deep social connections. Harry's 'curiosity and an openness to learn' about new topics aligns perfectly with Surabhi's enthusiastic desire to 'share her passions' and 'help others see the world through her enthusiastic perspective.' Both are adaptable and empathetic, with Harry showing resilience when plans change and Surabhi taking initiative in unexpected situations, promising a supportive and dynamic relationship.",
+        "what_theyd_talk_about": "Their varied hobbies and continuous learning, how they support their friends through tough times, and balancing social engagement with personal productivity. They'd also have rich conversations about their shared values of responsibility and proactive problem-solving.",
+        "the_honest_flag": "Harry's 'strong inclination towards productive things' on a day off might occasionally clash with Surabhi's desire for genuine spontaneity, requiring a conscious effort to carve out truly unplanned, fun moments.",
+        "age_check": "Both unknown",
+        "verdict": "STRONG MATCH"
+      },
+      {
+        "rank": 3,
+        "target_user": {
+          "name": "surabhi",
+          "gender": "female",
+          "attachment_style": "secure",
+          "age_preference": "not stated"
+        },
+        "candidate_user": {
+          "name": "kevin",
+          "gender": "male",
+          "attachment_style": "secure",
+          "age_preference": "not stated"
+        },
+        "compatibility_score": 78,
+        "score_breakdown": {
+          "conversation_energy": 17,
+          "communication_style": 17,
+          "values_alignment": 18,
+          "attachment_compatibility": 20,
+          "revealed_needs_crossover": 8,
+          "friction_deduction": -2
+        },
+        "why_they_match": "Surabhi and Kevin are both secure individuals who value shared intimate experiences and exhibit resilience in managing life's challenges. Kevin's 'casual and direct' communication, coupled with his 'pragmatic reassurance' and 'openness to exploring new things,' would be a solid match for Surabhi's engaged and solution-oriented style. His desire for 'intimate, shared experiences' and 'embracing novel experiences and spontaneity' aligns with Surabhi's love for 'mini trips with partners or friends' and her active engagement in relationships.",
+        "what_theyd_talk_about": "Their shared values around well-being and proactive coping, navigating spontaneous plans (while considering practicalities), and creating a comfortable home environment. They'd also discuss their perspectives on support and reassurance in relationships.",
+        "the_honest_flag": "Kevin's tendency to offer pragmatic reassurances like 'nothing is that serious in life' (Q4) could sometimes be perceived as dismissive by Surabhi, who, while pragmatic, emphasizes deep listening 'to their hearts content' when supporting friends.",
+        "age_check": "Both unknown",
+        "verdict": "GOOD MATCH"
+      },
+      {
+        "rank": 4,
+        "target_user": {
+          "name": "surabhi",
+          "gender": "female",
+          "attachment_style": "secure",
+          "age_preference": "not stated"
+        },
+        "candidate_user": {
+          "name": "ram",
+          "gender": "male",
+          "attachment_style": "unclear",
+          "age_preference": "student/young adult"
+        },
+        "compatibility_score": 64,
+        "score_breakdown": {
+          "conversation_energy": 14,
+          "communication_style": 15,
+          "values_alignment": 18,
+          "attachment_compatibility": 10,
+          "revealed_needs_crossover": 7,
+          "friction_deduction": 0
+        },
+        "why_they_match": "Surabhi and Ram share a profound alignment in their core values for 'mastery through persistent effort' and 'tangible impact,' even if expressed differently. Ram's deep satisfaction in 'overcoming difficulty' and 'accomplishment' with blues guitar and computer science projects would resonate with Surabhi's own 'proactive problem-solving and leadership.' Surabhi's 'engaged, helpful, and enthusiastic' communication style could gently draw out Ram, who is 'warm but initially reserved,' especially when discussing passions.",
+        "what_theyd_talk_about": "Their dedication to mastering complex skills, projects that create real-world impact (like AI/ML for Ram), and the intrinsic reward of learning. They could also discuss their creative outlets, such as guitar and dance, and the 'why' behind their emotional experiences.",
+        "the_honest_flag": "Ram's attachment style is 'unclear', which, combined with his initial 'reserved' communication, means Surabhi would need to be patient and potentially take the lead in deeper emotional vulnerability until Ram feels safe to open up fully.",
+        "age_check": "Ram is a student (young adult), Surabhi's age is not stated. Potentially compatible if age ranges align.",
+        "verdict": "POSSIBLE MATCH"
+      },
+      {
+        "rank": 5,
+        "target_user": {
+          "name": "surabhi",
+          "gender": "female",
+          "attachment_style": "secure",
+          "age_preference": "not stated"
+        },
+        "candidate_user": {
+          "name": "john",
+          "gender": "male",
+          "attachment_style": "avoidant",
+          "age_preference": "not stated"
+        },
+        "compatibility_score": 24,
+        "score_breakdown": {
+          "conversation_energy": 8,
+          "communication_style": 7,
+          "values_alignment": 10,
+          "attachment_compatibility": 5,
+          "revealed_needs_crossover": 2,
+          "friction_deduction": -8
+        },
+        "why_they_match": "While both Surabhi and John value established connections, their fundamental approaches to relationships and social dynamics diverge significantly. John's emphasis on routine and emotional comfort, alongside his avoidant attachment style, clashes with Surabhi's desire for shared spontaneity and active, empathetic engagement. There is not a natural conversational flow or meeting of needs that would easily sustain a deep connection without considerable effort from both sides.",
+        "what_theyd_talk_about": "Perhaps surface-level discussions about routine and personal well-being. However, deeper conversations about shared experiences, emotional support, or navigating spontaneity would likely be challenging given their differing styles.",
+        "the_honest_flag": "John's 'avoidant attachment style' and 'strong aversion to spontaneity' directly contradict Surabhi's core desire for 'shared experiences and connection' and her 'desire for adventurous, social engagement.' This pairing would involve a persistent push-pull dynamic, with Surabhi seeking engagement and John often creating distance or steering away from discomfort.",
+        "age_check": "Both unknown",
+        "verdict": "NO MATCH"
+      }
+    ],
+    "excluded_profiles": [
+      {
+        "name": "DabsterMan",
+        "reason": "insufficient_data"
+      },
+      {
+        "name": "packman",
+        "reason": "unknown_gender"
+      },
+      {
+        "name": "diku",
+        "reason": "unknown_gender"
+      },
+      {
+        "name": "hari",
+        "reason": "insufficient_data"
+      },
+      {
+        "name": "sita",
+        "reason": "insufficient_data"
+      },
+      {
+        "name": "geeta",
+        "reason": "insufficient_data"
+      },
+      {
+        "name": "sita",
+        "reason": "same_gender"
+      },
+      {
+        "name": "deepika",
+        "reason": "insufficient_data"
+      },
+      {
+        "name": "diskhya",
+        "reason": "insufficient_data"
+      }
+    ]
+  }
+}
