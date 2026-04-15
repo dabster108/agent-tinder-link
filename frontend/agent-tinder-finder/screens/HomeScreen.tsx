@@ -18,6 +18,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, {
   Easing,
+  FadeInDown,
+  FadeInUp,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
@@ -96,6 +98,12 @@ const HERO_DOTS = [
   { left: 282, top: 232, size: 4, opacity: 0.8 },
 ];
 
+const DASHBOARD_METRICS = [
+  { id: "s1", label: "Live Fits", value: "32" },
+  { id: "s2", label: "Agent Notes", value: "14" },
+  { id: "s3", label: "Ready", value: "7" },
+];
+
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 function ScalePressable({
@@ -108,8 +116,11 @@ function ScalePressable({
   children: React.ReactNode;
 }) {
   const scale = useSharedValue(1);
+  const hover = useSharedValue(0);
+
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [{ scale: scale.value }, { translateY: -2 * hover.value }],
+    opacity: 0.88 + hover.value * 0.12,
   }));
 
   return (
@@ -120,6 +131,12 @@ function ScalePressable({
       }}
       onPressOut={() => {
         scale.value = withSpring(1, { damping: 16, stiffness: 320 });
+      }}
+      onHoverIn={() => {
+        hover.value = withTiming(1, { duration: 170 });
+      }}
+      onHoverOut={() => {
+        hover.value = withTiming(0, { duration: 170 });
       }}
       style={[style, animatedStyle]}
     >
@@ -174,6 +191,8 @@ export default function HomeScreen() {
   const rotate = useSharedValue(0);
   const pulse = useSharedValue(0);
   const heroDrift = useSharedValue(0);
+  const deckBreath = useSharedValue(0);
+  const chipFloat = useSharedValue(0);
 
   React.useEffect(() => {
     heroDrift.value = withRepeat(
@@ -190,7 +209,37 @@ export default function HomeScreen() {
       -1,
       false,
     );
-  }, [heroDrift]);
+
+    deckBreath.value = withRepeat(
+      withSequence(
+        withTiming(1, {
+          duration: 2000,
+          easing: Easing.inOut(Easing.sin),
+        }),
+        withTiming(0, {
+          duration: 2200,
+          easing: Easing.inOut(Easing.quad),
+        }),
+      ),
+      -1,
+      false,
+    );
+
+    chipFloat.value = withRepeat(
+      withSequence(
+        withTiming(1, {
+          duration: 1500,
+          easing: Easing.inOut(Easing.quad),
+        }),
+        withTiming(0, {
+          duration: 1500,
+          easing: Easing.inOut(Easing.quad),
+        }),
+      ),
+      -1,
+      false,
+    );
+  }, [chipFloat, deckBreath, heroDrift]);
 
   const advance = React.useCallback(() => {
     setIndex((value) => (value + 1) % CARDS.length);
@@ -293,7 +342,10 @@ export default function HomeScreen() {
     const amount = Math.min(Math.abs(translateX.value) / 140, 1);
     return {
       opacity: 0.78 + amount * 0.22,
-      transform: [{ scale: 0.95 + amount * 0.05 }],
+      transform: [
+        { scale: 0.94 + amount * 0.05 + deckBreath.value * 0.01 },
+        { translateY: -3 * deckBreath.value },
+      ],
     };
   });
 
@@ -309,6 +361,24 @@ export default function HomeScreen() {
   const heroDotsStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: -4 + heroDrift.value * 8 }],
     opacity: 0.7 + heroDrift.value * 0.3,
+  }));
+
+  const aiTagStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: -2 + chipFloat.value * 4 }],
+    opacity: 0.88 + chipFloat.value * 0.12,
+  }));
+
+  const metricsRowStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: -4 + chipFloat.value * 8 }],
+  }));
+
+  const deckAuraStyle = useAnimatedStyle(() => ({
+    opacity: 0.26 + deckBreath.value * 0.26,
+    transform: [{ scale: 0.94 + deckBreath.value * 0.08 }],
+  }));
+
+  const actionsRowStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: -1 + chipFloat.value * 2 }],
   }));
 
   return (
@@ -337,37 +407,70 @@ export default function HomeScreen() {
             ))}
           </Animated.View>
 
-          <View style={styles.headerTopRow}>
-            <View style={styles.logoPill}>
-              <Ionicons name="sparkles" size={16} color={KindraColors.white} />
-              <Text style={styles.logoText}>SoulSync Update</Text>
+          <Animated.View entering={FadeInDown.delay(20).duration(470)}>
+            <View style={styles.headerTopRow}>
+              <View style={styles.logoPill}>
+                <Ionicons
+                  name="sparkles"
+                  size={16}
+                  color={KindraColors.white}
+                />
+                <Text style={styles.logoText}>SoulSync Update</Text>
+              </View>
+              <ScalePressable
+                style={styles.iconButton}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+              >
+                <Ionicons
+                  name="notifications"
+                  size={18}
+                  color={KindraColors.white}
+                />
+              </ScalePressable>
             </View>
-            <ScalePressable
-              style={styles.iconButton}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              }}
-            >
-              <Ionicons
-                name="notifications"
-                size={18}
-                color={KindraColors.white}
-              />
-            </ScalePressable>
-          </View>
+          </Animated.View>
 
-          <Text style={styles.headerTitle}>What&apos;s new with SoulSync</Text>
-          <Text style={styles.headerSubtitle}>
-            Swipe picks are now smarter, faster, and tuned to your vibe.
-          </Text>
+          <Animated.View entering={FadeInDown.delay(90).duration(480)}>
+            <Text style={styles.headerTitle}>
+              What&apos;s new with SoulSync
+            </Text>
+          </Animated.View>
 
-          <View style={styles.aiTag}>
+          <Animated.View entering={FadeInDown.delay(130).duration(480)}>
+            <Text style={styles.headerSubtitle}>
+              Swipe picks are now smarter, faster, and tuned to your vibe.
+            </Text>
+          </Animated.View>
+
+          <Animated.View
+            entering={FadeInDown.delay(170).duration(460)}
+            style={[styles.aiTag, aiTagStyle]}
+          >
             <Text style={styles.aiTagText}>Swipe section</Text>
-          </View>
+          </Animated.View>
+
+          <Animated.View
+            entering={FadeInDown.delay(230).duration(500)}
+            style={[styles.metricsRow, metricsRowStyle]}
+          >
+            {DASHBOARD_METRICS.map((item) => (
+              <View key={item.id} style={styles.metricPill}>
+                <Text style={styles.metricValue}>{item.value}</Text>
+                <Text style={styles.metricLabel}>{item.label}</Text>
+              </View>
+            ))}
+          </Animated.View>
         </View>
 
-        <View style={styles.body}>
+        <Animated.View
+          entering={FadeInUp.delay(240).duration(520)}
+          style={styles.body}
+        >
           <View style={styles.deckWrap}>
+            <Animated.View style={[styles.deckAura, deckAuraStyle]} />
+
             <Animated.View style={[styles.card, styles.backCard, backStyle]}>
               <ProfileCard card={nextCard} />
             </Animated.View>
@@ -394,7 +497,7 @@ export default function HomeScreen() {
             ) : null}
           </View>
 
-          <View style={styles.actionsRow}>
+          <Animated.View style={[styles.actionsRow, actionsRowStyle]}>
             <ScalePressable
               style={[styles.actionButton, styles.passButton]}
               onPress={() => onAction("pass")}
@@ -415,8 +518,8 @@ export default function HomeScreen() {
             >
               <Ionicons name="star" size={20} color={KindraColors.accent} />
             </ScalePressable>
-          </View>
-        </View>
+          </Animated.View>
+        </Animated.View>
       </SafeAreaView>
     </GestureHandlerRootView>
   );
@@ -527,6 +630,31 @@ const styles = StyleSheet.create({
     fontFamily: KindraFonts.bodyMedium,
     fontSize: 12,
   },
+  metricsRow: {
+    marginTop: 12,
+    flexDirection: "row",
+    gap: 8,
+  },
+  metricPill: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(116, 133, 174, 0.28)",
+    backgroundColor: "rgba(12, 21, 40, 0.72)",
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  metricValue: {
+    color: KindraColors.white,
+    fontFamily: KindraFonts.bodyBold,
+    fontSize: 14,
+  },
+  metricLabel: {
+    marginTop: 1,
+    color: KindraColors.textMuted,
+    fontFamily: KindraFonts.body,
+    fontSize: 10,
+  },
   body: {
     flex: 1,
     paddingHorizontal: 16,
@@ -536,6 +664,15 @@ const styles = StyleSheet.create({
   deckWrap: {
     flex: 1,
     justifyContent: "center",
+    position: "relative",
+  },
+  deckAura: {
+    position: "absolute",
+    width: "90%",
+    height: "70%",
+    alignSelf: "center",
+    borderRadius: 30,
+    backgroundColor: "rgba(62, 141, 255, 0.2)",
   },
   card: {
     position: "absolute",
