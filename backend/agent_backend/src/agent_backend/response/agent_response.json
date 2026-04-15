@@ -2435,5 +2435,113 @@
     "behavior_updates": [],
     "notes": [],
     "profile_raw_output": "ERROR: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+  },
+  {
+    "session_id": "personality-chat-20260415093428",
+    "created_at": "2026-04-15T09:34:28.929972+00:00",
+    "last_updated_at": "2026-04-15T09:40:20.166707+00:00",
+    "agent": "personality_agent",
+    "mode": "conversation",
+    "user": {
+      "name": "diskhya"
+    },
+    "onboarding": {
+      "user_context": {
+        "name": "diskhya",
+        "age": "unknown",
+        "location": "unknown",
+        "interests": [],
+        "lifestyle": [],
+        "relationship_goals": [],
+        "account_notes": [
+          "No signup profile details have been captured yet.",
+          "Use vivid universal scenarios if the account context is sparse."
+        ]
+      },
+      "questions": [
+        {
+          "id": "perfect_friday_night",
+          "question": "Okay diskhya, let's start with something fun. It's Friday night, zero obligations, and you've got the whole evening to yourself. What does your absolutely perfect evening actually look like?",
+          "focus": "Social energy, introversion/extroversion, self-care, preferred pace of life."
+        },
+        {
+          "id": "friend_rough_week",
+          "question": "Alright, next one. Imagine a close friend of yours is having a really rough week \u2013 they're feeling down, maybe a bit overwhelmed. What's the *first thing* you actually do for them, not what you think you *should* do, but what your instinct tells you?",
+          "focus": "Empathy, support style, practical vs. emotional support, problem-solving vs. presence."
+        },
+        {
+          "id": "last_minute_trip",
+          "question": "Okay, picture this: your group of friends is planning a super last-minute, spontaneous trip \u2013 like, leaving next weekend. What role do you typically find yourself playing in that kind of situation? Are you the one packing immediately, the one researching logistics, or maybe a bit hesitant?",
+          "focus": "Spontaneity, comfort with change, planning orientation, role in group dynamics."
+        },
+        {
+          "id": "favorite_movie_unseen",
+          "question": "Here's a fun one: You're on a date, and somehow, it comes out that they've *never* seen your all-time favorite movie. What's your honest, immediate reaction and what do you do next?",
+          "focus": "Passion, enthusiasm, desire to share, emotional expressiveness, how they handle differing tastes."
+        },
+        {
+          "id": "unstructured_day_off",
+          "question": "Last one for now: It's your day off, completely unstructured, no plans, no obligations. Walk me through how you actually spend those hours from morning to evening.",
+          "focus": "Self-direction, relationship with routine, preferred activities, how they manage freedom."
+        }
+      ],
+      "answers": [
+        {
+          "step": 1,
+          "timestamp": "2026-04-15T09:35:28.082133+00:00",
+          "question": {
+            "id": "perfect_friday_night",
+            "question": "Okay diskhya, let's start with something fun. It's Friday night, zero obligations, and you've got the whole evening to yourself. What does your absolutely perfect evening actually look like?",
+            "focus": "Social energy, introversion/extroversion, self-care, preferred pace of life."
+          },
+          "answer": "going to the gym working out for a bit then coming back home hanging out with my loved ones and enjoying their company"
+        },
+        {
+          "step": 2,
+          "timestamp": "2026-04-15T09:37:26.874976+00:00",
+          "question": {
+            "id": "friend_rough_week",
+            "question": "Alright, next one. Imagine a close friend of yours is having a really rough week \u2013 they're feeling down, maybe a bit overwhelmed. What's the *first thing* you actually do for them, not what you think you *should* do, but what your instinct tells you?",
+            "focus": "Empathy, support style, practical vs. emotional support, problem-solving vs. presence."
+          },
+          "answer": "firstly i try to calm them down and listent to what they have said and if they are not comfortable sharing then i would tyr to give them company in some way or another. I believe you can help someone a lot by just being there for them."
+        },
+        {
+          "step": 3,
+          "timestamp": "2026-04-15T09:38:03.924035+00:00",
+          "question": {
+            "id": "last_minute_trip",
+            "question": "Okay, picture this: your group of friends is planning a super last-minute, spontaneous trip \u2013 like, leaving next weekend. What role do you typically find yourself playing in that kind of situation? Are you the one packing immediately, the one researching logistics, or maybe a bit hesitant?",
+            "focus": "Spontaneity, comfort with change, planning orientation, role in group dynamics."
+          },
+          "answer": "I would be a little hesitant since i can't just leave my work and everything behind just like that"
+        },
+        {
+          "step": 4,
+          "timestamp": "2026-04-15T09:39:16.672698+00:00",
+          "question": {
+            "id": "favorite_movie_unseen",
+            "question": "Here's a fun one: You're on a date, and somehow, it comes out that they've *never* seen your all-time favorite movie. What's your honest, immediate reaction and what do you do next?",
+            "focus": "Passion, enthusiasm, desire to share, emotional expressiveness, how they handle differing tastes."
+          },
+          "answer": "I would definately woudl make them watch and also if the date is going well then i would suggest him to do netflix and chill and watch that movie"
+        },
+        {
+          "step": 5,
+          "timestamp": "2026-04-15T09:39:55.284118+00:00",
+          "question": {
+            "id": "unstructured_day_off",
+            "question": "Last one for now: It's your day off, completely unstructured, no plans, no obligations. Walk me through how you actually spend those hours from morning to evening.",
+            "focus": "Self-direction, relationship with routine, preferred activities, how they manage freedom."
+          },
+          "answer": "wake up, eat breakfast, workout, work on your hobbies and spend time with your loved ones that's it"
+        }
+      ]
+    },
+    "conversation": [],
+    "profile": {},
+    "behavior_updates": [],
+    "notes": [],
+    "profile_raw_output": "ERROR: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
   }
 ]

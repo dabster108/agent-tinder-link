@@ -32,7 +32,11 @@ crewai install
 To kickstart your crew of AI agents and begin task execution, run this from the root folder of your project:
 
 ```bash
+personality agent 
 $ crewai run
+
+matching agent 
+uv run match <username> 
 ```
 
 This command initializes the agent_backend Crew, assembling the agents and assigning them tasks as defined in your configuration.
