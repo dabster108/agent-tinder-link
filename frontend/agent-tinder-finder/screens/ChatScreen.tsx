@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import {
   FlatList,
@@ -17,11 +19,14 @@ import {
 } from "react-native-safe-area-context";
 import Animated, {
   Easing,
+  FadeInDown,
   FadeInUp,
+  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withRepeat,
+  withSequence,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
@@ -71,18 +76,27 @@ function ScalePressable({
   onPress: () => void;
 }) {
   const scale = useSharedValue(1);
+  const hover = useSharedValue(0);
+
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [{ scale: scale.value }, { translateY: -1.5 * hover.value }],
+    opacity: 0.86 + hover.value * 0.14,
   }));
 
   return (
     <AnimatedPressable
       style={[style, animatedStyle]}
       onPressIn={() => {
-        scale.value = withSpring(0.96, { damping: 16, stiffness: 320 });
+        scale.value = withSpring(0.95, { damping: 16, stiffness: 320 });
       }}
       onPressOut={() => {
         scale.value = withSpring(1, { damping: 16, stiffness: 320 });
+      }}
+      onHoverIn={() => {
+        hover.value = withTiming(1, { duration: 170 });
+      }}
+      onHoverOut={() => {
+        hover.value = withTiming(0, { duration: 170 });
       }}
       onPress={onPress}
     >
@@ -92,22 +106,31 @@ function ScalePressable({
 }
 
 function Dot({ delay }: { delay: number }) {
-  const progress = useSharedValue(0.4);
+  const progress = useSharedValue(0.35);
 
   useEffect(() => {
     progress.value = withRepeat(
       withDelay(
         delay,
-        withTiming(1, { duration: 450, easing: Easing.inOut(Easing.quad) }),
+        withSequence(
+          withTiming(1, {
+            duration: 420,
+            easing: Easing.out(Easing.quad),
+          }),
+          withTiming(0.35, {
+            duration: 560,
+            easing: Easing.inOut(Easing.quad),
+          }),
+        ),
       ),
       -1,
-      true,
+      false,
     );
   }, [delay, progress]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: progress.value,
-    transform: [{ scale: 0.7 + progress.value * 0.4 }],
+    transform: [{ scale: 0.66 + progress.value * 0.48 }],
   }));
 
   return <Animated.View style={[styles.typingDot, animatedStyle]} />;
@@ -116,11 +139,13 @@ function Dot({ delay }: { delay: number }) {
 function TypingIndicatorBubble() {
   return (
     <View style={[styles.bubble, styles.receivedBubble, styles.typingBubble]}>
-      <Text style={styles.typingText}>Agent is thinking...</Text>
+      <Text style={styles.typingText}>
+        Agent is drafting a better opener...
+      </Text>
       <View style={styles.typingRow}>
         <Dot delay={0} />
-        <Dot delay={120} />
-        <Dot delay={240} />
+        <Dot delay={110} />
+        <Dot delay={220} />
       </View>
     </View>
   );
@@ -128,10 +153,52 @@ function TypingIndicatorBubble() {
 
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useBottomTabBarHeight();
+  const composerBottomOffset = Math.max(tabBarHeight, 74) + 8;
+  const listRef = React.useRef<FlatList<Message>>(null);
+
   const [messages, setMessages] = React.useState<Message[]>(MESSAGES);
   const [draft, setDraft] = React.useState("");
   const [isTyping, setIsTyping] = React.useState(false);
   const replyTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const ambient = useSharedValue(0);
+  const composerFocus = useSharedValue(0);
+  const sendReady = useSharedValue(0);
+  const sendBurst = useSharedValue(0);
+
+  const canSend = draft.trim().length > 0;
+
+  React.useEffect(() => {
+    ambient.value = withRepeat(
+      withSequence(
+        withTiming(1, {
+          duration: 2800,
+          easing: Easing.inOut(Easing.sin),
+        }),
+        withTiming(0, {
+          duration: 2600,
+          easing: Easing.inOut(Easing.quad),
+        }),
+      ),
+      -1,
+      false,
+    );
+  }, [ambient]);
+
+  React.useEffect(() => {
+    sendReady.value = withTiming(canSend ? 1 : 0, {
+      duration: 220,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [canSend, sendReady]);
+
+  React.useEffect(() => {
+    const id = setTimeout(() => {
+      listRef.current?.scrollToEnd({ animated: true });
+    }, 60);
+    return () => clearTimeout(id);
+  }, [messages.length, isTyping]);
 
   React.useEffect(() => {
     return () => {
@@ -150,6 +217,19 @@ export default function ChatScreen() {
     if (!trimmed) {
       return;
     }
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    sendBurst.value = 0;
+    sendBurst.value = withSequence(
+      withTiming(1, {
+        duration: 120,
+        easing: Easing.out(Easing.quad),
+      }),
+      withTiming(0, {
+        duration: 190,
+        easing: Easing.inOut(Easing.quad),
+      }),
+    );
 
     const messageId = `${Date.now()}-sent`;
     setMessages((prev) => [
@@ -173,12 +253,46 @@ export default function ChatScreen() {
         {
           id: `${Date.now()}-received`,
           from: "received",
-          text: "Nice one. I can help you turn that into a stronger opener.",
+          text: "Nice one. Want me to suggest a playful follow-up?",
         },
       ]);
       setIsTyping(false);
-    }, 900);
-  }, [draft]);
+    }, 950);
+  }, [draft, sendBurst]);
+
+  const ambientOrbStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: -14 + ambient.value * 28 }],
+    opacity: 0.28 + ambient.value * 0.24,
+  }));
+
+  const composerShellStyle = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(
+      composerFocus.value,
+      [0, 1],
+      [KindraColors.border, "rgba(75, 149, 255, 0.78)"],
+    ),
+    shadowOpacity: 0.1 + composerFocus.value * 0.26,
+    transform: [{ translateY: -composerFocus.value * 2 }],
+  }));
+
+  const composerGlowStyle = useAnimatedStyle(() => ({
+    opacity: 0.08 + composerFocus.value * 0.28,
+  }));
+
+  const sendButtonStyle = useAnimatedStyle(() => ({
+    opacity: 0.56 + sendReady.value * 0.44,
+    transform: [
+      { scale: 0.84 + sendReady.value * 0.16 + sendBurst.value * 0.06 },
+      { translateY: (1 - sendReady.value) * 3 },
+    ],
+  }));
+
+  const sendIconStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: sendBurst.value * 2.2 },
+      { translateY: -sendBurst.value * 1.2 },
+    ],
+  }));
 
   return (
     <View style={styles.screen}>
@@ -189,15 +303,20 @@ export default function ChatScreen() {
           keyboardVerticalOffset={Platform.OS === "ios" ? 8 : 0}
         >
           <View style={styles.header}>
-            <ScalePressable style={styles.headerIcon} onPress={onPressAny}>
-              <Ionicons
-                name="chevron-back"
-                size={22}
-                color={KindraColors.white}
-              />
-            </ScalePressable>
+            <Animated.View entering={FadeInDown.delay(20).duration(420)}>
+              <ScalePressable style={styles.headerIcon} onPress={onPressAny}>
+                <Ionicons
+                  name="chevron-back"
+                  size={22}
+                  color={KindraColors.white}
+                />
+              </ScalePressable>
+            </Animated.View>
 
-            <View style={styles.headerCenter}>
+            <Animated.View
+              entering={FadeInDown.delay(70).duration(430)}
+              style={styles.headerCenter}
+            >
               <View style={styles.headerAvatarWrap}>
                 <View style={styles.headerAvatar}>
                   <Text style={styles.headerAvatarText}>M</Text>
@@ -205,98 +324,171 @@ export default function ChatScreen() {
                 <View style={styles.onlineDot} />
               </View>
               <Text style={styles.headerName}>Mira</Text>
-            </View>
+              <Text style={styles.headerStatus}>online now</Text>
+            </Animated.View>
 
-            <ScalePressable style={styles.headerIcon} onPress={onPressAny}>
-              <Ionicons name="videocam" size={20} color={KindraColors.white} />
-            </ScalePressable>
-          </View>
-
-          <FlatList
-            data={messages}
-            keyExtractor={(item) => item.id}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.messagesContent}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item, index }) => (
-              <Animated.View
-                entering={FadeInUp.delay(70 + index * 60).duration(270)}
-              >
-                {item.timestamp ? (
-                  <Text style={styles.timestamp}>{item.timestamp}</Text>
-                ) : null}
-
-                <View
-                  style={[
-                    styles.messageRow,
-                    item.from === "sent" ? styles.sentRow : styles.receivedRow,
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.bubble,
-                      item.from === "sent"
-                        ? styles.sentBubble
-                        : styles.receivedBubble,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.messageText,
-                        item.from === "sent"
-                          ? styles.sentText
-                          : styles.receivedText,
-                      ]}
-                    >
-                      {item.text}
-                    </Text>
-                  </View>
-                </View>
-              </Animated.View>
-            )}
-            ListFooterComponent={
-              isTyping ? (
-                <Animated.View entering={FadeInUp.delay(300).duration(260)}>
-                  <View style={[styles.messageRow, styles.receivedRow]}>
-                    <TypingIndicatorBubble />
-                  </View>
-                </Animated.View>
-              ) : null
-            }
-          />
-
-          <View
-            style={[
-              styles.inputArea,
-              { paddingBottom: Math.max(insets.bottom, 10) },
-            ]}
-          >
-            <View style={styles.inputRow}>
-              <TextInput
-                value={draft}
-                onChangeText={setDraft}
-                placeholder="Write a message"
-                placeholderTextColor={KindraColors.textMuted}
-                style={styles.input}
-                onSubmitEditing={sendMessage}
-                returnKeyType="send"
-              />
-
-              <ScalePressable
-                style={[
-                  styles.sendButton,
-                  !draft.trim().length && styles.sendButtonDisabled,
-                ]}
-                onPress={sendMessage}
-              >
+            <Animated.View entering={FadeInDown.delay(120).duration(420)}>
+              <ScalePressable style={styles.headerIcon} onPress={onPressAny}>
                 <Ionicons
-                  name="arrow-up"
-                  size={18}
+                  name="videocam"
+                  size={20}
                   color={KindraColors.white}
                 />
               </ScalePressable>
-            </View>
+            </Animated.View>
           </View>
+
+          <View style={styles.messagesWrap}>
+            <Animated.View
+              style={[styles.ambientOrb, styles.ambientLeft, ambientOrbStyle]}
+            />
+            <Animated.View
+              style={[styles.ambientOrb, styles.ambientRight, ambientOrbStyle]}
+            />
+
+            <FlatList
+              ref={listRef}
+              data={messages}
+              keyExtractor={(item) => item.id}
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={styles.messagesContent}
+              showsVerticalScrollIndicator={false}
+              ListHeaderComponent={
+                <Animated.View entering={FadeInUp.delay(80).duration(420)}>
+                  <View style={styles.dayChip}>
+                    <Text style={styles.dayChipText}>Today</Text>
+                  </View>
+                </Animated.View>
+              }
+              renderItem={({ item, index }) => (
+                <Animated.View
+                  entering={FadeInUp.delay(120 + index * 45).duration(300)}
+                >
+                  {item.timestamp ? (
+                    <Text style={styles.timestamp}>{item.timestamp}</Text>
+                  ) : null}
+
+                  <View
+                    style={[
+                      styles.messageRow,
+                      item.from === "sent"
+                        ? styles.sentRow
+                        : styles.receivedRow,
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.bubble,
+                        item.from === "sent"
+                          ? styles.sentBubble
+                          : styles.receivedBubble,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.messageText,
+                          item.from === "sent"
+                            ? styles.sentText
+                            : styles.receivedText,
+                        ]}
+                      >
+                        {item.text}
+                      </Text>
+                    </View>
+                  </View>
+                </Animated.View>
+              )}
+              ListFooterComponent={
+                isTyping ? (
+                  <Animated.View entering={FadeInUp.delay(120).duration(280)}>
+                    <View style={[styles.messageRow, styles.receivedRow]}>
+                      <TypingIndicatorBubble />
+                    </View>
+                  </Animated.View>
+                ) : null
+              }
+            />
+          </View>
+
+          <Animated.View
+            style={[
+              styles.inputArea,
+              {
+                paddingBottom: Math.max(insets.bottom, 10),
+                marginBottom: composerBottomOffset,
+              },
+            ]}
+          >
+            <Animated.View style={[styles.composerShell, composerShellStyle]}>
+              <Animated.View
+                pointerEvents="none"
+                style={[styles.composerGlow, composerGlowStyle]}
+              />
+
+              <ScalePressable style={styles.attachButton} onPress={onPressAny}>
+                <Ionicons
+                  name="add"
+                  size={20}
+                  color={KindraColors.primaryMid}
+                />
+              </ScalePressable>
+
+              <View style={styles.inputWrap}>
+                <TextInput
+                  value={draft}
+                  onChangeText={setDraft}
+                  placeholder="Message Mira"
+                  placeholderTextColor={KindraColors.textMuted}
+                  style={styles.input}
+                  onSubmitEditing={sendMessage}
+                  returnKeyType="send"
+                  multiline
+                  maxLength={280}
+                  onFocus={() => {
+                    composerFocus.value = withTiming(1, {
+                      duration: 220,
+                      easing: Easing.out(Easing.cubic),
+                    });
+                  }}
+                  onBlur={() => {
+                    composerFocus.value = withTiming(0, {
+                      duration: 220,
+                      easing: Easing.inOut(Easing.quad),
+                    });
+                  }}
+                />
+              </View>
+
+              <AnimatedPressable
+                style={styles.sendButtonHitbox}
+                onPress={sendMessage}
+                disabled={!canSend}
+              >
+                <Animated.View
+                  style={[
+                    styles.sendButton,
+                    sendButtonStyle,
+                    !canSend && styles.sendButtonDisabled,
+                  ]}
+                >
+                  <LinearGradient
+                    colors={["#5CA3FF", "#2E72F3"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.sendGradient}
+                  >
+                    <Animated.View style={sendIconStyle}>
+                      <Ionicons
+                        name="send"
+                        size={16}
+                        color={KindraColors.white}
+                      />
+                    </Animated.View>
+                  </LinearGradient>
+                </Animated.View>
+              </AnimatedPressable>
+            </Animated.View>
+          </Animated.View>
         </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
@@ -317,15 +509,17 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: KindraColors.primary,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
     overflow: "hidden",
     paddingHorizontal: 16,
     paddingTop: 10,
-    paddingBottom: 16,
+    paddingBottom: 14,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(62, 141, 255, 0.23)",
   },
   headerIcon: {
     width: 38,
@@ -333,12 +527,12 @@ const styles = StyleSheet.create({
     borderRadius: 19,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.18)",
+    backgroundColor: "rgba(255,255,255,0.16)",
   },
   headerCenter: {
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
+    gap: 4,
   },
   headerAvatarWrap: {
     position: "relative",
@@ -359,7 +553,7 @@ const styles = StyleSheet.create({
   onlineDot: {
     position: "absolute",
     right: -1,
-    bottom: 0,
+    bottom: 1,
     width: 10,
     height: 10,
     borderRadius: 5,
@@ -372,10 +566,53 @@ const styles = StyleSheet.create({
     fontFamily: KindraFonts.heading,
     fontSize: 18,
   },
+  headerStatus: {
+    color: KindraColors.primaryLight,
+    fontFamily: KindraFonts.body,
+    fontSize: 11,
+    letterSpacing: 0.3,
+    textTransform: "uppercase",
+  },
+  messagesWrap: {
+    flex: 1,
+    position: "relative",
+  },
+  ambientOrb: {
+    position: "absolute",
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: "rgba(62, 141, 255, 0.16)",
+    zIndex: 0,
+  },
+  ambientLeft: {
+    left: -110,
+    top: 46,
+  },
+  ambientRight: {
+    right: -120,
+    bottom: 40,
+  },
   messagesContent: {
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 12,
     paddingBottom: 10,
+    zIndex: 1,
+  },
+  dayChip: {
+    alignSelf: "center",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(117, 136, 180, 0.35)",
+    backgroundColor: "rgba(15, 23, 42, 0.78)",
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    marginBottom: 12,
+  },
+  dayChipText: {
+    color: KindraColors.textMuted,
+    fontFamily: KindraFonts.bodyMedium,
+    fontSize: 11,
   },
   timestamp: {
     alignSelf: "center",
@@ -385,7 +622,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
   messageRow: {
-    marginBottom: 10,
+    marginBottom: 11,
     flexDirection: "row",
   },
   sentRow: {
@@ -396,17 +633,23 @@ const styles = StyleSheet.create({
   },
   bubble: {
     maxWidth: "82%",
-    borderRadius: 18,
+    borderRadius: 19,
     paddingHorizontal: 13,
     paddingVertical: 10,
   },
   sentBubble: {
     backgroundColor: KindraColors.primaryMid,
-    borderBottomRightRadius: 4,
+    borderBottomRightRadius: 6,
+    shadowColor: "#1f7eff",
+    shadowOpacity: 0.32,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
   },
   receivedBubble: {
     backgroundColor: KindraColors.card,
-    borderBottomLeftRadius: 4,
+    borderBottomLeftRadius: 6,
+    borderWidth: 1,
+    borderColor: "rgba(116, 133, 174, 0.22)",
     ...KindraShadow,
   },
   messageText: {
@@ -433,7 +676,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    marginTop: 7,
+    marginTop: 8,
   },
   typingDot: {
     width: 7,
@@ -442,39 +685,71 @@ const styles = StyleSheet.create({
     backgroundColor: KindraColors.primaryMid,
   },
   inputArea: {
+    backgroundColor: "rgba(15, 23, 42, 0.92)",
     borderTopWidth: 1,
-    borderTopColor: KindraColors.border,
-    backgroundColor: KindraColors.card,
+    borderTopColor: "rgba(28, 42, 71, 0.9)",
     paddingHorizontal: 12,
-    paddingTop: 12,
+    paddingTop: 10,
   },
-  inputRow: {
-    backgroundColor: KindraColors.background,
-    borderRadius: 24,
+  composerShell: {
+    borderRadius: 26,
+    borderWidth: 1,
+    backgroundColor: "rgba(7, 13, 27, 0.94)",
+    minHeight: 56,
+    paddingVertical: 7,
     paddingHorizontal: 8,
-    paddingVertical: 8,
     flexDirection: "row",
+    alignItems: "flex-end",
+    position: "relative",
+    shadowColor: "#000",
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+  },
+  composerGlow: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 26,
+    backgroundColor: "rgba(75, 149, 255, 0.15)",
+  },
+  attachButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
-    gap: 8,
+    justifyContent: "center",
+    backgroundColor: "rgba(62, 141, 255, 0.16)",
+    borderWidth: 1,
+    borderColor: "rgba(75, 149, 255, 0.28)",
+    marginBottom: 3,
+  },
+  inputWrap: {
+    flex: 1,
+    paddingHorizontal: 8,
   },
   input: {
-    flex: 1,
     color: KindraColors.text,
     fontFamily: KindraFonts.body,
     fontSize: 14,
     paddingVertical: 8,
-    paddingHorizontal: 10,
+    maxHeight: 108,
+    minHeight: 36,
+  },
+  sendButtonHitbox: {
+    padding: 2,
+    marginBottom: 1,
   },
   sendButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: KindraColors.primaryMid,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: "hidden",
     ...KindraShadow,
   },
+  sendGradient: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   sendButtonDisabled: {
-    opacity: 0.55,
+    shadowOpacity: 0,
   },
 });
