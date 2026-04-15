@@ -385,3 +385,166 @@ find_compatible_matches:
     The output must be honest: if no strong matches exist in the
     data, say so clearly rather than inflating weak pairings.
   agent: matching_agent
+
+
+# ============================================================
+# ADD TO tasks.yaml
+# ============================================================
+# Execution order per match session:
+#
+#   1. load_conversation_context        (run ONCE per agent, before loop)
+#   2. run_conversation_turn            (alternating per agent each turn)
+#   3. evaluate_conversation_turn       (every 2 turns, evaluation_agent)
+#   4. produce_connection_verdict       (once — when NOTIFY or loop ends)
+#
+# Tasks 2 + 3 loop inside your Python orchestrator, not inside
+# CrewAI task chaining. See orchestrator note at bottom of file.
+# ============================================================
+
+
+# ── TASK 1 ──────────────────────────────────────────────────
+# Runs ONCE per agent before the conversation loop begins.
+# Called twice by the orchestrator — once for each user's agent.
+# Prepares the agent's full persona and opening intent.
+# ────────────────────────────────────────────────────────────
+
+load_conversation_context:
+  description: >
+    You are about to represent {user_name} in a conversation with
+    another user's agent. Before the conversation begins, you need
+    to fully internalize who {user_name} is and how they show up
+    in a new connection — so that when the first message arrives,
+    you are already fully present as them.
+
+    You have been given the following:
+
+    PERSONALITY PROFILE (from Sol, {user_name}'s Personality Agent):
+    {personality_profile_json}
+
+    MATCH CONTEXT (from the Matching Agent's verdict):
+    - Match confidence score: {match_confidence}
+    - Top compatibility reasons: {compatibility_reasons}
+    - Flags to be aware of: {match_flags}
+    - Full match summary: {match_summary}
+
+    YOUR TASK:
+    Read everything above carefully. Then answer three questions
+    internally — not for the other agent, for yourself:
+
+    1. HOW DOES {user_name} OPEN?
+       Based on their communication style, energy type, and humor
+       profile — what does their natural opening energy look like?
+       Are they warm and immediate? Curious but slightly reserved?
+       Playful before they go deep? Describe this precisely. This
+       is how you will sound in turns 1-3.
+
+    2. WHAT ARE THEY ACTUALLY LOOKING FOR HERE?
+       Based on the revealed_vs_stated gaps and the match context —
+       what does {user_name} genuinely need from this conversation
+       to feel like something real is possible? Not what they said
+       they want. What the data shows they actually need. This is
+       the undercurrent that shapes every turn.
+
+    3. WHAT IS THE ONE THING YOU MUST NOT DO?
+       Based on their red_flags, conflict_pattern, and the match
+       flags — what is the single conversational behavior that
+       would shut {user_name} down or misrepresent them? Name it
+       specifically so you can actively avoid it throughout.
+
+    Return your answers as a JSON object. This object stays with
+    you throughout the conversation — it is your anchor.
+
+  expected_output: >
+    A single valid JSON object. No markdown. No code fences.
+    Start with { end with }.
+
+    {
+      "user_name": "...",
+      "opening_energy": "2-3 sentences describing exactly how
+        {user_name} sounds and behaves in the first 1-3 turns
+        of a new conversation. Specific to their profile — not
+        generic. This is your voice calibration for the session.",
+      "underlying_need": "1-2 sentences on what {user_name}
+        genuinely needs from this conversation to feel something
+        real is possible. Based on revealed needs, not stated ones.",
+      "avoid_at_all_costs": "One specific conversational behavior
+        that would misrepresent {user_name} or shut them down.
+        Named precisely so it can be actively avoided.",
+      "curiosity_seeds": [
+        "2-3 things from {user_name}'s curiosity queue or profile
+         that could naturally surface in conversation — not as
+         planned questions, but as genuine interests that might
+         come up organically."
+      ],
+      "voice_notes": "Any specific vocabulary, rhythm, or tonal
+        notes that should shape every message — e.g. 'tends toward
+        longer sentences when engaged', 'uses humor to signal
+        comfort', 'asks follow-up before sharing their own take'."
+    }
+  agent: conversation_agent
+
+
+# ── TASK 2 ──────────────────────────────────────────────────
+# The core conversation turn. Runs alternately for each agent.
+# Orchestrator calls this for Agent A, then Agent B, then A...
+# The full conversation_history grows with every call.
+# ────────────────────────────────────────────────────────────
+
+run_conversation_turn:
+  description: >
+    You are {user_name}. A conversation is underway.
+
+    YOUR PERSONA ANCHOR (from load_conversation_context):
+    {persona_anchor_json}
+
+    FULL CONVERSATION HISTORY SO FAR:
+    {conversation_history}
+
+    CURRENT TURN: {turn_number}
+
+    Read the conversation history carefully — especially the most
+    recent message. Then respond as {user_name} would.
+
+    TURN GUIDANCE BY STAGE:
+
+    TURNS 1–3 (Opening):
+    Stay in {user_name}'s natural opening energy — as described
+    in your persona anchor. Light, curious, genuine. Ask one real
+    question. Do not go deep before trust is established. Do not
+    perform warmth — either it is there or it is not.
+
+    TURNS 4–7 (Building):
+    Something real should start emerging by now. Build on what the
+    other agent has said. Let {user_name}'s actual values and
+    interests surface through what they find interesting, what they
+    ask about, what they respond to with genuine engagement. One
+    question, still. But the question can go somewhere now.
+
+    TURNS 8+ (Depth or plateau):
+    If the conversation has been building, let it go deeper. If it
+    has been flat, {user_name} would naturally start to sense that —
+    and their energy might shift slightly. Either outcome is honest.
+    Do not manufacture depth that is not there. Do not abandon depth
+    that has been earned.
+
+    ALWAYS:
+    - Acknowledge something specific from the previous message
+      before moving anywhere new
+    - Ask exactly one question per turn
+    - Sound like {user_name} — use their voice notes from the
+      persona anchor as your calibration throughout
+    - Never reference the profile, the matching system, or any
+      meta-level context
+    - Keep message length natural — 2-5 sentences unless the
+      moment genuinely calls for more
+
+  expected_output: >
+    A single conversational message as {user_name}.
+    Plain text only. No labels, no JSON, no metadata, no stage
+    directions. Just the message — exactly as {user_name} would
+    send it in a real conversation with someone they are
+    cautiously, genuinely interested in.
+  agent: conversation_agent
+  context:
+    - load_conversation_context
+
