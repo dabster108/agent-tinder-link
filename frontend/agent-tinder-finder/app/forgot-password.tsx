@@ -28,7 +28,7 @@ export default function ForgotPasswordScreenRoute() {
 
     Alert.alert(
       "Reset requested",
-      "Password reset is not connected yet. Contact admin for now.",
+      "Password reset is not connected yet. Contact support for now.",
     );
   }, [email]);
 
