@@ -1,10 +1,12 @@
 import React from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import Svg, { Circle } from "react-native-svg";
 import Animated, {
   Easing,
+  FadeInDown,
   FadeInUp,
   useAnimatedStyle,
   useSharedValue,
@@ -13,274 +15,195 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { AppBackground } from "@/components/premium/AppBackground";
-import { ConnectionVisualization } from "@/components/premium/ConnectionVisualization";
-import { GlassCard } from "@/components/premium/GlassCard";
-import { PrimaryButton } from "@/components/premium/PrimaryButton";
-import { AgentStatusCard } from "@/components/premium/dashboard/AgentStatusCard";
-import { DashboardHeader } from "@/components/premium/dashboard/Header";
-import { QuoteCard } from "@/components/premium/dashboard/QuoteCard";
-import { PremiumTheme } from "@/components/premium/theme";
-import { useAuth } from "@/context/AuthContext";
+const SoulTheme = {
+  red: "#E53935",
+  redSoft: "#F04C47",
+  canvas: "#0F0F0F",
+  canvasAlt: "#121212",
+  card: "#F6F2EE",
+  cardSoft: "#FCF9F7",
+  textPrimary: "#181716",
+  textSecondary: "#6D6864",
+  textOnDark: "#F8F6F3",
+  darkChip: "#211F1D",
+};
 
-const KPIS = [
-  { id: "k1", label: "Active Agents", value: "148" },
-  { id: "k2", label: "Live Matches", value: "32" },
-  { id: "k3", label: "Coach Nudges", value: "19" },
-  { id: "k4", label: "Avg Confidence", value: "92%" },
+const STATS = [
+  { id: "s1", value: 32, label: "Live Fits", icon: "flash" as const },
+  { id: "s2", value: 14, label: "Agent Notes", icon: "document-text" as const },
+  { id: "s3", value: 7, label: "Ready", icon: "checkmark-circle" as const },
 ];
 
-const PIPELINE_STEPS = [
-  { id: "p1", title: "Profile Exchange", detail: "12 pairs in queue" },
-  { id: "p2", title: "Overlap Analysis", detail: "9 deep comparisons running" },
-  { id: "p3", title: "Conflict Resolution", detail: "4 high priority flags" },
-  { id: "p4", title: "Final Decision", detail: "7 ready for reveal" },
-];
+const INTERESTS = ["Intentional dating", "Design", "Road trips", "Books"];
 
-const MATCHES = [
-  { id: "m1", name: "Mira + Aarav", score: "96%", status: "Ready" },
-  { id: "m2", name: "Sara + Kabir", score: "93%", status: "Review" },
-  { id: "m3", name: "Anya + Rohan", score: "91%", status: "Coaching" },
-];
-
-const COACH_QUEUE = [
-  "Mira and Aarav: suggest deeper value-based prompt",
-  "Sara and Kabir: re-engagement nudge after 3h silence",
-  "Anya and Rohan: ask weekend plan compatibility",
-];
-
-const HERO_DOTS = [
-  { left: 194, top: 26, size: 4, opacity: 0.9 },
-  { left: 228, top: 40, size: 6, opacity: 0.7 },
-  { left: 246, top: 74, size: 5, opacity: 0.8 },
-  { left: 274, top: 106, size: 4, opacity: 0.72 },
-  { left: 220, top: 134, size: 3, opacity: 0.68 },
-  { left: 288, top: 144, size: 4, opacity: 0.74 },
-  { left: 262, top: 172, size: 5, opacity: 0.7 },
-  { left: 304, top: 198, size: 3, opacity: 0.65 },
-  { left: 232, top: 212, size: 4, opacity: 0.78 },
-  { left: 284, top: 236, size: 4, opacity: 0.8 },
-  { left: 206, top: 248, size: 3, opacity: 0.62 },
-  { left: 320, top: 252, size: 5, opacity: 0.74 },
-];
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const CHIPS = ["Checklist", "All", "Challenges"];
+const RING_SIZE = 180;
+const RING_STROKE = 14;
+const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+const MATCH_SCORE = 0.94;
 
 export default function DashboardScreen() {
-  const router = useRouter();
-  const { signOut } = useAuth();
-
   const pulse = useSharedValue(0);
-  const cardLift = useSharedValue(0);
-  const heroDrift = useSharedValue(0);
 
   React.useEffect(() => {
     pulse.value = withRepeat(
       withSequence(
-        withTiming(1, {
-          duration: 1600,
-          easing: Easing.inOut(Easing.quad),
-        }),
-        withTiming(0, {
-          duration: 1600,
-          easing: Easing.inOut(Easing.quad),
-        }),
+        withTiming(1, { duration: 1700, easing: Easing.inOut(Easing.quad) }),
+        withTiming(0, { duration: 1700, easing: Easing.inOut(Easing.quad) }),
       ),
       -1,
       false,
     );
+  }, [pulse]);
 
-    cardLift.value = withRepeat(
-      withSequence(
-        withTiming(1, {
-          duration: 1800,
-          easing: Easing.inOut(Easing.quad),
-        }),
-        withTiming(0, {
-          duration: 1800,
-          easing: Easing.inOut(Easing.quad),
-        }),
-      ),
-      -1,
-      false,
-    );
-
-    heroDrift.value = withRepeat(
-      withSequence(
-        withTiming(1, {
-          duration: 2200,
-          easing: Easing.inOut(Easing.quad),
-        }),
-        withTiming(0, {
-          duration: 2200,
-          easing: Easing.inOut(Easing.quad),
-        }),
-      ),
-      -1,
-      false,
-    );
-  }, [cardLift, heroDrift, pulse]);
-
-  const livePillStyle = useAnimatedStyle(() => ({
-    opacity: 0.45 + pulse.value * 0.55,
-    transform: [{ scale: 0.95 + pulse.value * 0.08 }],
+  const ringStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${-90 + pulse.value * 2}deg` }],
   }));
 
-  const matchCardStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: -cardLift.value * 2 }],
+  const glowStyle = useAnimatedStyle(() => ({
+    opacity: 0.3 + pulse.value * 0.35,
+    transform: [{ scale: 0.96 + pulse.value * 0.08 }],
   }));
-
-  const heroDotsStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: -4 + heroDrift.value * 8 }],
-    opacity: 0.7 + heroDrift.value * 0.3,
-  }));
-
-  const onSignOut = React.useCallback(() => {
-    signOut();
-    router.replace("/login");
-  }, [router, signOut]);
 
   return (
-    <View style={styles.screen}>
-      <AppBackground />
+    <View style={styles.root}>
+      <LinearGradient
+        colors={[SoulTheme.canvas, SoulTheme.canvasAlt, "#181413"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+
+      <Animated.View style={[styles.glowTop, glowStyle]} />
 
       <SafeAreaView edges={["top"]} style={styles.safeArea}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.content}
         >
-          <DashboardHeader />
-
-          <Animated.View entering={FadeInUp.delay(30).duration(620)}>
-            <LinearGradient
-              colors={["#0A0F1A", "#0B1222", "#0E1427"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.gemmaHero}
-            >
-              <View style={styles.heroGlowLeft} />
-              <View style={styles.heroGlowRight} />
-
-              <Animated.View style={[styles.heroDotsLayer, heroDotsStyle]}>
-                {HERO_DOTS.map((dot, index) => (
-                  <View
-                    key={`hero-dot-${index}`}
-                    style={[
-                      styles.heroDot,
-                      {
-                        left: dot.left,
-                        top: dot.top,
-                        width: dot.size,
-                        height: dot.size,
-                        borderRadius: dot.size / 2,
-                        opacity: dot.opacity,
-                      },
-                    ]}
-                  />
-                ))}
-              </Animated.View>
-
-              <Text style={styles.heroTopLabel}>SoulSync Update</Text>
-              <Text style={styles.heroHeading}>
-                What&apos;s new in SoulSync
-              </Text>
-              <Text style={styles.heroSubtext}>
-                New intelligence upgrades across matching, negotiation, and
-                coach guidance are now live.
-              </Text>
-            </LinearGradient>
-          </Animated.View>
-
-          <Animated.View entering={FadeInUp.delay(60).duration(500)}>
-            <Animated.View style={[styles.livePill, livePillStyle]}>
-              <View style={styles.liveDot} />
-              <Text style={styles.liveText}>SoulSync Live Intelligence</Text>
-            </Animated.View>
-          </Animated.View>
-
-          <QuoteCard />
-          <AgentStatusCard />
-
-          <Animated.View entering={FadeInUp.delay(220).duration(620)}>
-            <GlassCard style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>System Overview</Text>
-              <View style={styles.kpiGrid}>
-                {KPIS.map((item) => (
-                  <View key={item.id} style={styles.kpiCard}>
-                    <Text style={styles.kpiValue}>{item.value}</Text>
-                    <Text style={styles.kpiLabel}>{item.label}</Text>
-                  </View>
-                ))}
+          <Animated.View
+            entering={FadeInDown.duration(450)}
+            style={styles.head}
+          >
+            <View>
+              <Text style={styles.brand}>SoulSync</Text>
+              <Text style={styles.headline}>What&apos;s new</Text>
+            </View>
+            <View style={styles.badgeRow}>
+              <View style={styles.counterBadge}>
+                <Text style={styles.counterValue}>32</Text>
+                <Text style={styles.counterText}>Live Fits</Text>
               </View>
-            </GlassCard>
+              <View style={styles.counterBadge}>
+                <Text style={styles.counterValue}>14</Text>
+                <Text style={styles.counterText}>Agent Notes</Text>
+              </View>
+            </View>
           </Animated.View>
 
-          <Animated.View entering={FadeInUp.delay(280).duration(620)}>
-            <GlassCard style={styles.sectionCard}>
-              <ConnectionVisualization />
-            </GlassCard>
-          </Animated.View>
-
-          <Animated.View entering={FadeInUp.delay(340).duration(620)}>
-            <GlassCard style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>Negotiation Pipeline</Text>
-              {PIPELINE_STEPS.map((step, index) => (
-                <View key={step.id} style={styles.pipelineRow}>
-                  <View style={styles.pipelineLeft}>
-                    <View style={styles.stepDot} />
-                    {index < PIPELINE_STEPS.length - 1 ? (
-                      <View style={styles.stepLine} />
-                    ) : null}
+          <Animated.View entering={FadeInUp.delay(60).duration(480)}>
+            <View style={styles.statsRow}>
+              {STATS.map((item) => (
+                <View key={item.id} style={styles.statCard}>
+                  <View style={styles.statIconWrap}>
+                    <Ionicons
+                      name={item.icon}
+                      size={14}
+                      color={SoulTheme.red}
+                    />
                   </View>
-                  <View style={styles.pipelineContent}>
-                    <Text style={styles.pipelineTitle}>{step.title}</Text>
-                    <Text style={styles.pipelineDetail}>{step.detail}</Text>
-                  </View>
+                  <Text style={styles.statValue}>{item.value}</Text>
+                  <Text style={styles.statLabel}>{item.label}</Text>
                 </View>
               ))}
-            </GlassCard>
+            </View>
           </Animated.View>
 
-          <Animated.View entering={FadeInUp.delay(400).duration(620)}>
-            <GlassCard style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>Top Match Outcomes</Text>
-              {MATCHES.map((item) => (
-                <Animated.View
-                  key={item.id}
-                  style={[styles.matchRow, matchCardStyle]}
+          <Animated.View
+            entering={FadeInUp.delay(120).duration(520)}
+            style={styles.matchWrap}
+          >
+            <View style={styles.matchCard}>
+              <Text style={styles.sectionLabel}>Compatibility Pulse</Text>
+              <View style={styles.ringWrap}>
+                <View style={styles.ringTrack}>
+                  <Animated.View style={[styles.ringProgressWrap, ringStyle]}>
+                    <Svg width={RING_SIZE} height={RING_SIZE}>
+                      <Circle
+                        cx={RING_SIZE / 2}
+                        cy={RING_SIZE / 2}
+                        r={RING_RADIUS}
+                        stroke={SoulTheme.red}
+                        strokeWidth={RING_STROKE}
+                        strokeDasharray={`${RING_CIRCUMFERENCE} ${RING_CIRCUMFERENCE}`}
+                        strokeDashoffset={
+                          RING_CIRCUMFERENCE * (1 - MATCH_SCORE)
+                        }
+                        strokeLinecap="round"
+                        fill="transparent"
+                      />
+                    </Svg>
+                  </Animated.View>
+                  <View style={styles.ringCenter}>
+                    <Text style={styles.matchPercent}>94%</Text>
+                    <Text style={styles.matchText}>match</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Animated.View>
+
+          <Animated.View
+            entering={FadeInUp.delay(190).duration(520)}
+            style={styles.profileCard}
+          >
+            <View style={styles.profileTop}>
+              <View style={styles.avatarWrap}>
+                <Text style={styles.avatarText}>M</Text>
+              </View>
+              <View style={styles.profileMeta}>
+                <Text style={styles.profileName}>Mira Sen</Text>
+                <Text style={styles.profileRole}>
+                  Product designer and deep listener
+                </Text>
+                <Text style={styles.profileBio}>
+                  Loves intentional conversations, sunrise runs, and planning
+                  spontaneous weekend escapes.
+                </Text>
+              </View>
+            </View>
+            <View style={styles.interestsRow}>
+              {INTERESTS.map((interest) => (
+                <View key={interest} style={styles.interestChip}>
+                  <Text style={styles.interestText}>{interest}</Text>
+                </View>
+              ))}
+            </View>
+          </Animated.View>
+
+          <Animated.View
+            entering={FadeInUp.delay(240).duration(500)}
+            style={styles.chipsRow}
+          >
+            {CHIPS.map((chip, index) => (
+              <View
+                key={chip}
+                style={[
+                  styles.filterChip,
+                  index === 0 && styles.filterChipActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.filterChipText,
+                    index === 0 && styles.filterChipTextActive,
+                  ]}
                 >
-                  <View>
-                    <Text style={styles.matchName}>{item.name}</Text>
-                    <Text style={styles.matchStatus}>{item.status}</Text>
-                  </View>
-                  <View style={styles.scoreWrap}>
-                    <Text style={styles.matchScore}>{item.score}</Text>
-                  </View>
-                </Animated.View>
-              ))}
-            </GlassCard>
-          </Animated.View>
-
-          <Animated.View entering={FadeInUp.delay(460).duration(620)}>
-            <GlassCard style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>Coach Queue</Text>
-              {COACH_QUEUE.map((item) => (
-                <View key={item} style={styles.coachRow}>
-                  <View style={styles.dot} />
-                  <Text style={styles.coachText}>{item}</Text>
-                </View>
-              ))}
-            </GlassCard>
-          </Animated.View>
-
-          <Animated.View entering={FadeInUp.delay(520).duration(620)}>
-            <PrimaryButton label="Open Match Queue" onPress={() => {}} />
-          </Animated.View>
-
-          <Animated.View entering={FadeInUp.delay(580).duration(620)}>
-            <AnimatedPressable style={styles.signOutBtn} onPress={onSignOut}>
-              <Text style={styles.signOutText}>Sign out</Text>
-            </AnimatedPressable>
+                  {chip}
+                </Text>
+              </View>
+            ))}
           </Animated.View>
         </ScrollView>
       </SafeAreaView>
@@ -289,240 +212,251 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  root: {
     flex: 1,
-    backgroundColor: PremiumTheme.gradient.canvas,
+    backgroundColor: SoulTheme.canvas,
   },
   safeArea: {
     flex: 1,
   },
+  glowTop: {
+    position: "absolute",
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    top: -120,
+    right: -80,
+    backgroundColor: "rgba(229,57,53,0.24)",
+  },
   content: {
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: 6,
     paddingBottom: 120,
     gap: 14,
   },
-  gemmaHero: {
-    minHeight: 280,
-    borderRadius: 26,
-    overflow: "hidden",
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-    borderWidth: 1,
-    borderColor: "rgba(84, 113, 176, 0.22)",
+  head: {
+    borderRadius: 22,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    shadowColor: "#000",
+    shadowOpacity: 0.16,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
   },
-  heroGlowLeft: {
-    position: "absolute",
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    top: -120,
-    left: -70,
-    backgroundColor: "rgba(48, 120, 255, 0.14)",
+  brand: {
+    color: SoulTheme.red,
+    fontSize: 15,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 0.3,
   },
-  heroGlowRight: {
-    position: "absolute",
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    bottom: -160,
-    right: -100,
-    backgroundColor: "rgba(31, 95, 235, 0.16)",
-  },
-  heroDotsLayer: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  heroDot: {
-    position: "absolute",
-    backgroundColor: "#4C8DFF",
-    shadowColor: "#4C8DFF",
-    shadowOpacity: 0.38,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 0 },
-  },
-  heroTopLabel: {
-    color: "rgba(255,255,255,0.62)",
-    fontSize: 14,
-    fontFamily: "Inter_500Medium",
-  },
-  heroHeading: {
-    marginTop: 10,
-    maxWidth: 250,
-    color: "#3E8DFF",
-    fontSize: 46,
-    lineHeight: 48,
-    letterSpacing: -1.1,
+  headline: {
+    marginTop: 6,
+    color: SoulTheme.textOnDark,
+    fontSize: 28,
     fontFamily: "Inter_800ExtraBold",
   },
-  heroSubtext: {
+  badgeRow: {
     marginTop: 12,
-    maxWidth: 240,
-    color: "rgba(234, 240, 255, 0.82)",
-    fontSize: 14,
-    lineHeight: 20,
-    fontFamily: "Inter_500Medium",
-  },
-  livePill: {
-    alignSelf: "flex-start",
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.82)",
-    borderWidth: 1,
-    borderColor: PremiumTheme.surface.border,
     flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
+    gap: 10,
+  },
+  counterBadge: {
+    borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 7,
-  },
-  liveDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: PremiumTheme.accents.success,
-  },
-  liveText: {
-    color: PremiumTheme.text.primary,
-    fontSize: 12,
-    letterSpacing: 0.2,
-    fontFamily: "Inter_600SemiBold",
-  },
-  sectionCard: {
-    gap: 12,
-  },
-  sectionTitle: {
-    color: PremiumTheme.text.primary,
-    fontSize: 16,
-    fontFamily: "Inter_700Bold",
-    marginBottom: 2,
-  },
-  kpiGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  kpiCard: {
-    width: "47%",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: PremiumTheme.surface.border,
-    backgroundColor: "rgba(255,255,255,0.76)",
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-  },
-  kpiValue: {
-    color: PremiumTheme.text.primary,
-    fontSize: 20,
-    fontFamily: "Inter_700Bold",
-  },
-  kpiLabel: {
-    color: PremiumTheme.text.secondary,
-    fontSize: 12,
-    fontFamily: "Inter_500Medium",
-  },
-  pipelineRow: {
-    flexDirection: "row",
-    alignItems: "stretch",
-    gap: 10,
-  },
-  pipelineLeft: {
-    width: 14,
-    alignItems: "center",
-  },
-  stepDot: {
-    width: 9,
-    height: 9,
-    borderRadius: 4.5,
-    marginTop: 6,
-    backgroundColor: PremiumTheme.accents.blue,
-  },
-  stepLine: {
-    marginTop: 4,
-    width: 2,
-    flex: 1,
-    borderRadius: 1,
-    backgroundColor: "rgba(120, 146, 214, 0.36)",
-  },
-  pipelineContent: {
-    flex: 1,
-    paddingBottom: 8,
-  },
-  pipelineTitle: {
-    color: PremiumTheme.text.primary,
-    fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
-  },
-  pipelineDetail: {
-    marginTop: 2,
-    color: PremiumTheme.text.secondary,
-    fontSize: 12,
-    fontFamily: "Inter_500Medium",
-  },
-  matchRow: {
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: PremiumTheme.surface.border,
-    backgroundColor: "rgba(255,255,255,0.78)",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    backgroundColor: "rgba(229,57,53,0.15)",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    gap: 6,
   },
-  matchName: {
-    color: PremiumTheme.text.primary,
-    fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
-  },
-  matchStatus: {
-    marginTop: 2,
-    color: PremiumTheme.text.secondary,
-    fontSize: 12,
-    fontFamily: "Inter_500Medium",
-  },
-  scoreWrap: {
-    borderRadius: 999,
-    backgroundColor: "rgba(75, 149, 255, 0.15)",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  matchScore: {
-    color: PremiumTheme.accents.blue,
+  counterValue: {
+    color: SoulTheme.textOnDark,
     fontSize: 13,
     fontFamily: "Inter_700Bold",
   },
-  coachRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: PremiumTheme.accents.blue,
-  },
-  coachText: {
-    flex: 1,
-    color: PremiumTheme.text.secondary,
-    fontSize: 14,
-    lineHeight: 20,
+  counterText: {
+    color: "rgba(248,246,243,0.85)",
+    fontSize: 12,
     fontFamily: "Inter_500Medium",
   },
-  signOutBtn: {
-    alignSelf: "center",
-    marginTop: 2,
-    minWidth: 120,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: PremiumTheme.surface.border,
-    backgroundColor: "rgba(255,255,255,0.74)",
+  statsRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  statCard: {
+    flex: 1,
+    borderRadius: 18,
+    backgroundColor: SoulTheme.card,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+  },
+  statIconWrap: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "rgba(229,57,53,0.14)",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 10,
   },
-  signOutText: {
-    color: PremiumTheme.text.primary,
+  statValue: {
+    marginTop: 10,
+    color: SoulTheme.textPrimary,
+    fontSize: 26,
+    fontFamily: "Inter_700Bold",
+  },
+  statLabel: {
+    color: SoulTheme.textSecondary,
+    fontSize: 12,
+    fontFamily: "Inter_500Medium",
+  },
+  matchWrap: {
+    borderRadius: 22,
+    backgroundColor: SoulTheme.card,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+  },
+  matchCard: {
+    alignItems: "center",
+  },
+  sectionLabel: {
+    color: SoulTheme.textSecondary,
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+  },
+  ringWrap: {
+    marginTop: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  ringTrack: {
+    width: RING_SIZE,
+    height: RING_SIZE,
+    borderRadius: RING_SIZE / 2,
+    borderWidth: RING_STROKE,
+    borderColor: "rgba(229,57,53,0.14)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  ringProgressWrap: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  ringCenter: {
+    width: RING_SIZE - 44,
+    height: RING_SIZE - 44,
+    borderRadius: (RING_SIZE - 44) / 2,
+    backgroundColor: SoulTheme.cardSoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  matchPercent: {
+    color: SoulTheme.textPrimary,
+    fontSize: 38,
+    lineHeight: 40,
+    fontFamily: "Inter_800ExtraBold",
+  },
+  matchText: {
+    marginTop: 2,
+    color: SoulTheme.red,
     fontSize: 14,
     fontFamily: "Inter_600SemiBold",
+  },
+  profileCard: {
+    borderRadius: 22,
+    backgroundColor: SoulTheme.card,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    gap: 14,
+  },
+  profileTop: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  avatarWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: SoulTheme.red,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: {
+    color: "#FFFFFF",
+    fontSize: 24,
+    fontFamily: "Inter_700Bold",
+  },
+  profileMeta: {
+    flex: 1,
+    gap: 2,
+  },
+  profileName: {
+    color: SoulTheme.textPrimary,
+    fontSize: 18,
+    fontFamily: "Inter_700Bold",
+  },
+  profileRole: {
+    color: SoulTheme.red,
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+  },
+  profileBio: {
+    marginTop: 4,
+    color: SoulTheme.textSecondary,
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: "Inter_500Medium",
+  },
+  interestsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  interestChip: {
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    backgroundColor: "rgba(229,57,53,0.1)",
+  },
+  interestText: {
+    color: SoulTheme.textPrimary,
+    fontSize: 12,
+    fontFamily: "Inter_500Medium",
+  },
+  chipsRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 2,
+  },
+  filterChip: {
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderWidth: 1,
+    borderColor: "rgba(229,57,53,0.35)",
+    backgroundColor: "rgba(246,242,238,0.92)",
+  },
+  filterChipActive: {
+    backgroundColor: SoulTheme.red,
+    borderColor: SoulTheme.red,
+  },
+  filterChipText: {
+    color: SoulTheme.red,
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+  },
+  filterChipTextActive: {
+    color: "#FFFFFF",
   },
 });

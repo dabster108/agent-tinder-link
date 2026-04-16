@@ -1,37 +1,39 @@
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Animated, { FadeInUp } from "react-native-reanimated";
-import {
+import Animated, {
+  Easing,
+  FadeInDown,
+  FadeInUp,
   useAnimatedStyle,
   useSharedValue,
+  withRepeat,
+  withSequence,
   withSpring,
+  withTiming,
 } from "react-native-reanimated";
 
-import {
-  KindraColors,
-  KindraFonts,
-  KindraShadow,
-} from "@/constants/kindraTheme";
+import { SoulCardShadow, SoulSyncTheme } from "@/constants/soulSyncTheme";
 
 const INTERESTS = [
-  "Design Systems",
-  "AI Agents",
+  "Intentional dating",
+  "Product design",
   "Running",
-  "Travel",
-  "Mindfulness",
-  "Music",
-  "Coffee Walks",
+  "Road trips",
+  "Live music",
+  "Coffee walks",
+  "Storytelling",
 ];
 
 const SETTINGS = [
-  { id: "1", title: "Privacy", icon: "lock-closed" },
-  { id: "2", title: "Notifications", icon: "notifications" },
-  { id: "3", title: "Agent Preferences", icon: "sparkles" },
-  { id: "4", title: "Connected Accounts", icon: "link" },
-  { id: "5", title: "Appearance", icon: "color-palette" },
+  { id: "1", title: "Privacy", icon: "lock-closed-outline" },
+  { id: "2", title: "Notifications", icon: "notifications-outline" },
+  { id: "3", title: "Agent Preferences", icon: "sparkles-outline" },
+  { id: "4", title: "Connected Accounts", icon: "link-outline" },
+  { id: "5", title: "Appearance", icon: "color-palette-outline" },
 ];
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -46,6 +48,7 @@ function ScalePressable({
   onPress: () => void;
 }) {
   const scale = useSharedValue(1);
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
@@ -53,13 +56,13 @@ function ScalePressable({
   return (
     <AnimatedPressable
       style={[style, animatedStyle]}
+      onPress={onPress}
       onPressIn={() => {
-        scale.value = withSpring(0.96, { damping: 16, stiffness: 320 });
+        scale.value = withSpring(0.97, { damping: 16, stiffness: 320 });
       }}
       onPressOut={() => {
         scale.value = withSpring(1, { damping: 16, stiffness: 320 });
       }}
-      onPress={onPress}
     >
       {children}
     </AnimatedPressable>
@@ -67,85 +70,104 @@ function ScalePressable({
 }
 
 export default function ProfileScreen() {
+  const pulse = useSharedValue(0);
+
+  React.useEffect(() => {
+    pulse.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.quad) }),
+        withTiming(0, { duration: 2000, easing: Easing.inOut(Easing.quad) }),
+      ),
+      -1,
+      false,
+    );
+  }, [pulse]);
+
+  const glowStyle = useAnimatedStyle(() => ({
+    opacity: 0.18 + pulse.value * 0.28,
+    transform: [{ scale: 0.96 + pulse.value * 0.08 }],
+  }));
+
   const onPressAny = React.useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
 
   return (
-    <View style={styles.screen}>
+    <View style={styles.root}>
+      <LinearGradient
+        colors={[SoulSyncTheme.canvas, SoulSyncTheme.canvasAlt, "#1A1312"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+
+      <Animated.View style={[styles.glow, glowStyle]} />
+
       <SafeAreaView edges={["top"]} style={styles.safeArea}>
         <ScrollView
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.content}
         >
-          <View style={styles.header}>
-            <View style={styles.avatarWrap}>
-              <View style={styles.avatar}>
+          <Animated.View
+            entering={FadeInDown.duration(440)}
+            style={styles.hero}
+          >
+            <Text style={styles.heroBrand}>SoulSync</Text>
+            <Text style={styles.heroTitle}>Profile</Text>
+            <Text style={styles.heroSubtitle}>
+              Your match blueprint, refined by your agent.
+            </Text>
+
+            <View style={styles.profileCard}>
+              <View style={styles.avatarWrap}>
                 <Text style={styles.avatarText}>D</Text>
               </View>
-              <ScalePressable style={styles.avatarEdit} onPress={onPressAny}>
+
+              <View style={styles.profileMeta}>
+                <Text style={styles.name}>Dikshanta</Text>
+                <Text style={styles.role}>Intentional communicator</Text>
+                <Text style={styles.bio}>
+                  Calm, curious, and long-term oriented. You connect best
+                  through clear values and consistent energy.
+                </Text>
+              </View>
+
+              <ScalePressable style={styles.editButton} onPress={onPressAny}>
                 <Ionicons
-                  name="create"
-                  size={14}
-                  color={KindraColors.primary}
+                  name="create-outline"
+                  size={15}
+                  color={SoulSyncTheme.red}
                 />
               </ScalePressable>
             </View>
-
-            <Text style={styles.name}>Dikshanta</Text>
-            <Text style={styles.tagline}>
-              Intentional builder, curious conversationalist, and thoughtful
-              matcher.
-            </Text>
-          </View>
+          </Animated.View>
 
           <Animated.View
-            entering={FadeInUp.duration(260)}
-            style={styles.statsCard}
+            entering={FadeInUp.delay(60).duration(360)}
+            style={styles.statsRow}
           >
             {[
               { label: "Matches", value: "128" },
-              { label: "Connections", value: "74" },
-              { label: "Chats", value: "42" },
-            ].map((item, idx) => (
-              <View key={item.label} style={styles.statCol}>
+              { label: "Agent Notes", value: "42" },
+              { label: "Ready", value: "19" },
+            ].map((item) => (
+              <View key={item.label} style={styles.statCard}>
                 <Text style={styles.statValue}>{item.value}</Text>
                 <Text style={styles.statLabel}>{item.label}</Text>
-                {idx < 2 ? <View style={styles.statDivider} /> : null}
               </View>
             ))}
           </Animated.View>
 
           <Animated.View
-            entering={FadeInUp.delay(60).duration(260)}
-            style={styles.section}
+            entering={FadeInUp.delay(100).duration(360)}
+            style={styles.block}
           >
-            <Text style={styles.sectionTitle}>About Me</Text>
-            <View style={styles.aboutCard}>
-              <View style={styles.aboutAccent} />
-              <View style={styles.aboutBody}>
-                <Text style={styles.aboutTitle}>Agent Summary</Text>
-                <Text style={styles.aboutText}>
-                  Your profile suggests you thrive in relationships that balance
-                  ambition, emotional clarity, and playful curiosity. You
-                  connect best with people who communicate directly and follow
-                  through consistently.
-                </Text>
-              </View>
-            </View>
-          </Animated.View>
-
-          <Animated.View
-            entering={FadeInUp.delay(110).duration(260)}
-            style={styles.section}
-          >
-            <Text style={styles.sectionTitle}>My Interests</Text>
-            <View style={styles.interestWrap}>
+            <Text style={styles.blockTitle}>Interests</Text>
+            <View style={styles.chipWrap}>
               {INTERESTS.map((interest) => (
                 <ScalePressable
                   key={interest}
-                  style={styles.interestPill}
+                  style={styles.interestChip}
                   onPress={onPressAny}
                 >
                   <Text style={styles.interestText}>{interest}</Text>
@@ -155,29 +177,25 @@ export default function ProfileScreen() {
           </Animated.View>
 
           <Animated.View
-            entering={FadeInUp.delay(150).duration(260)}
-            style={styles.section}
+            entering={FadeInUp.delay(140).duration(360)}
+            style={styles.block}
           >
-            <Text style={styles.sectionTitle}>Agent Insights</Text>
-            <View style={styles.insightCard}>
-              <View style={styles.insightHeader}>
-                <Text style={styles.insightIcon}>🤖</Text>
-                <Text style={styles.insightTitle}>What your agent knows</Text>
-              </View>
-              <Text style={styles.insightText}>
-                You naturally build trust through clarity and calm pacing.
-                Compatibility tends to rise when conversations include values,
-                routines, and long-term intent.
+            <Text style={styles.blockTitle}>Agent Summary</Text>
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryText}>
+                Your conversations perform best when the opener is personal,
+                concise, and future-facing. Your top trait blend: emotional
+                clarity + thoughtful humor.
               </Text>
             </View>
           </Animated.View>
 
           <Animated.View
-            entering={FadeInUp.delay(210).duration(260)}
-            style={styles.section}
+            entering={FadeInUp.delay(180).duration(360)}
+            style={styles.block}
           >
-            <Text style={styles.sectionTitle}>Settings</Text>
-            <View style={styles.settingsList}>
+            <Text style={styles.blockTitle}>Settings</Text>
+            <View style={styles.settingsWrap}>
               {SETTINGS.map((item) => (
                 <ScalePressable
                   key={item.id}
@@ -188,14 +206,14 @@ export default function ProfileScreen() {
                     <Ionicons
                       name={item.icon as keyof typeof Ionicons.glyphMap}
                       size={16}
-                      color={KindraColors.primaryMid}
+                      color={SoulSyncTheme.red}
                     />
                   </View>
                   <Text style={styles.settingLabel}>{item.title}</Text>
                   <Ionicons
                     name="chevron-forward"
-                    size={17}
-                    color={KindraColors.textMuted}
+                    size={16}
+                    color={SoulSyncTheme.inkMuted}
                   />
                 </ScalePressable>
               ))}
@@ -208,218 +226,191 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  root: {
     flex: 1,
-    backgroundColor: KindraColors.background,
+    backgroundColor: SoulSyncTheme.canvas,
   },
   safeArea: {
     flex: 1,
-    backgroundColor: KindraColors.background,
+  },
+  glow: {
+    position: "absolute",
+    top: -120,
+    right: -80,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: "rgba(229,57,53,0.24)",
   },
   content: {
-    paddingBottom: 116,
-  },
-  header: {
-    backgroundColor: KindraColors.primary,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-    overflow: "hidden",
-    height: 220,
-    alignItems: "center",
-    justifyContent: "center",
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 8,
+    paddingBottom: 120,
+    gap: 12,
+  },
+  hero: {
+    borderRadius: 22,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    padding: 16,
+  },
+  heroBrand: {
+    color: SoulSyncTheme.red,
+    fontSize: 14,
+    fontFamily: "Inter_700Bold",
+  },
+  heroTitle: {
+    marginTop: 6,
+    color: SoulSyncTheme.onDark,
+    fontSize: 28,
+    fontFamily: "Inter_800ExtraBold",
+  },
+  heroSubtitle: {
+    marginTop: 6,
+    color: SoulSyncTheme.onDarkMuted,
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: "Inter_500Medium",
+  },
+  profileCard: {
+    marginTop: 14,
+    borderRadius: 20,
+    backgroundColor: SoulSyncTheme.card,
+    padding: 12,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    ...SoulCardShadow,
   },
   avatarWrap: {
-    position: "relative",
-  },
-  avatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    borderWidth: 3,
-    borderColor: KindraColors.accent,
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: SoulSyncTheme.red,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: KindraColors.primaryLight,
+    marginRight: 10,
   },
   avatarText: {
-    color: KindraColors.primary,
-    fontFamily: KindraFonts.heading,
-    fontSize: 42,
+    color: "#FFF",
+    fontSize: 24,
+    fontFamily: "Inter_700Bold",
   },
-  avatarEdit: {
-    position: "absolute",
-    right: -2,
-    bottom: -2,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: KindraColors.white,
-    borderWidth: 1,
-    borderColor: KindraColors.border,
+  profileMeta: {
+    flex: 1,
   },
   name: {
-    marginTop: 12,
-    color: KindraColors.white,
-    fontFamily: KindraFonts.heading,
-    fontSize: 26,
+    color: SoulSyncTheme.ink,
+    fontSize: 18,
+    fontFamily: "Inter_700Bold",
   },
-  tagline: {
-    marginTop: 4,
-    color: KindraColors.primaryLight,
-    fontFamily: KindraFonts.body,
+  role: {
+    marginTop: 2,
+    color: SoulSyncTheme.red,
     fontSize: 13,
-    textAlign: "center",
-    maxWidth: 290,
-    lineHeight: 18,
+    fontFamily: "Inter_600SemiBold",
   },
-  statsCard: {
-    marginHorizontal: 16,
-    marginTop: -34,
-    backgroundColor: KindraColors.white,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: KindraColors.border,
-    flexDirection: "row",
-    paddingVertical: 14,
-    ...KindraShadow,
+  bio: {
+    marginTop: 6,
+    color: SoulSyncTheme.inkMuted,
+    fontSize: 12,
+    lineHeight: 17,
+    fontFamily: "Inter_500Medium",
   },
-  statCol: {
-    flex: 1,
+  editButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 11,
+    backgroundColor: "rgba(229,57,53,0.12)",
     alignItems: "center",
     justifyContent: "center",
-    position: "relative",
+    marginLeft: 6,
+  },
+  statsRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  statCard: {
+    flex: 1,
+    borderRadius: 18,
+    backgroundColor: SoulSyncTheme.card,
+    paddingVertical: 12,
+    alignItems: "center",
+    ...SoulCardShadow,
   },
   statValue: {
-    color: KindraColors.primaryMid,
-    fontFamily: KindraFonts.heading,
-    fontSize: 22,
+    color: SoulSyncTheme.ink,
+    fontSize: 24,
+    fontFamily: "Inter_700Bold",
   },
   statLabel: {
     marginTop: 2,
-    color: KindraColors.textMuted,
-    fontFamily: KindraFonts.body,
-    fontSize: 11,
+    color: SoulSyncTheme.inkMuted,
+    fontSize: 12,
+    fontFamily: "Inter_500Medium",
   },
-  statDivider: {
-    position: "absolute",
-    right: 0,
-    width: 1,
-    top: 8,
-    bottom: 8,
-    backgroundColor: KindraColors.border,
-  },
-  section: {
-    marginTop: 16,
-    paddingHorizontal: 16,
+  block: {
+    marginTop: 2,
     gap: 10,
   },
-  sectionTitle: {
-    color: KindraColors.text,
-    fontFamily: KindraFonts.bodyBold,
+  blockTitle: {
+    color: SoulSyncTheme.onDark,
     fontSize: 15,
+    fontFamily: "Inter_700Bold",
   },
-  aboutCard: {
-    backgroundColor: KindraColors.white,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: KindraColors.border,
-    overflow: "hidden",
-    flexDirection: "row",
-    ...KindraShadow,
-  },
-  aboutAccent: {
-    width: 4,
-    backgroundColor: KindraColors.primaryMid,
-  },
-  aboutBody: {
-    flex: 1,
-    padding: 12,
-  },
-  aboutTitle: {
-    color: KindraColors.text,
-    fontFamily: KindraFonts.bodyBold,
-    fontSize: 13,
-    marginBottom: 4,
-  },
-  aboutText: {
-    color: KindraColors.textSecondary,
-    fontFamily: KindraFonts.body,
-    fontSize: 13,
-    lineHeight: 19,
-  },
-  interestWrap: {
+  chipWrap: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
   },
-  interestPill: {
-    borderRadius: 20,
+  interestChip: {
+    borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: KindraColors.primaryLight,
+    backgroundColor: "rgba(246,242,238,0.94)",
+    borderWidth: 1,
+    borderColor: "rgba(229,57,53,0.28)",
   },
   interestText: {
-    color: KindraColors.primaryMid,
-    fontFamily: KindraFonts.bodyMedium,
-    fontSize: 13,
+    color: SoulSyncTheme.red,
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
   },
-  insightCard: {
-    backgroundColor: KindraColors.primary,
-    borderRadius: 16,
+  summaryCard: {
+    borderRadius: 18,
+    backgroundColor: SoulSyncTheme.card,
     padding: 12,
-    ...KindraShadow,
+    ...SoulCardShadow,
   },
-  insightHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  insightIcon: {
-    fontSize: 18,
-  },
-  insightTitle: {
-    color: KindraColors.white,
-    fontFamily: KindraFonts.heading,
-    fontSize: 16,
-  },
-  insightText: {
-    marginTop: 8,
-    color: KindraColors.primaryLight,
-    fontFamily: KindraFonts.body,
+  summaryText: {
+    color: SoulSyncTheme.inkMuted,
     fontSize: 13,
     lineHeight: 19,
+    fontFamily: "Inter_500Medium",
   },
-  settingsList: {
+  settingsWrap: {
     gap: 8,
   },
   settingRow: {
-    backgroundColor: KindraColors.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: KindraColors.border,
+    borderRadius: 16,
+    backgroundColor: SoulSyncTheme.card,
     paddingHorizontal: 12,
-    paddingVertical: 12,
-    flexDirection: "row",
+    paddingVertical: 11,
     alignItems: "center",
-    ...KindraShadow,
+    flexDirection: "row",
+    ...SoulCardShadow,
   },
   settingIconWrap: {
     width: 30,
     height: 30,
-    borderRadius: 15,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: KindraColors.primaryLight,
+    backgroundColor: "rgba(229,57,53,0.12)",
     marginRight: 10,
   },
   settingLabel: {
     flex: 1,
-    color: KindraColors.text,
-    fontFamily: KindraFonts.bodyMedium,
+    color: SoulSyncTheme.ink,
     fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
   },
 });

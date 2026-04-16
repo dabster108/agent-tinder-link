@@ -6,25 +6,15 @@ type AuthContextValue = {
   signOut: () => void;
 };
 
-const ADMIN_USERNAME = "admin";
-const ADMIN_PASSWORD = "admin@123";
-
 const AuthContext = React.createContext<AuthContextValue | undefined>(
   undefined,
 );
-
-export const DefaultAdminCredentials = {
-  username: ADMIN_USERNAME,
-  password: ADMIN_PASSWORD,
-};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
 
   const signIn = React.useCallback((username: string, password: string) => {
-    const isValid =
-      username.trim().toLowerCase() === ADMIN_USERNAME &&
-      password === ADMIN_PASSWORD;
+    const isValid = username.trim().length > 0 && password.trim().length > 0;
 
     setIsAuthenticated(isValid);
     return isValid;

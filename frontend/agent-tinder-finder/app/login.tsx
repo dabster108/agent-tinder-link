@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -25,14 +24,21 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import {
-  KindraColors,
-  KindraFonts,
-  KindraShadow,
-} from "@/constants/kindraTheme";
-import { DefaultAdminCredentials, useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+const SoulTheme = {
+  red: "#E53935",
+  redDark: "#C62828",
+  textPrimary: "#121212",
+  textOnDark: "#F8F6F3",
+  textMuted: "rgba(248,246,243,0.7)",
+  pageBg: "#0F0F0F",
+  cardBg: "#F6F2EE",
+  inputBg: "#FFFDFC",
+  danger: "#D32F2F",
+};
 
 export default function LoginScreenRoute() {
   const router = useRouter();
@@ -41,8 +47,8 @@ export default function LoginScreenRoute() {
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [isPasswordHidden, setIsPasswordHidden] = React.useState(true);
-  const [error, setError] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [error, setError] = React.useState("");
   const [focusedInput, setFocusedInput] = React.useState<
     "username" | "password" | null
   >(null);
@@ -50,19 +56,12 @@ export default function LoginScreenRoute() {
   const pulse = useSharedValue(0);
   const drift = useSharedValue(0);
   const buttonScale = useSharedValue(1);
-  const badgeScale = useSharedValue(1);
 
   React.useEffect(() => {
     pulse.value = withRepeat(
       withSequence(
-        withTiming(1, {
-          duration: 1800,
-          easing: Easing.inOut(Easing.quad),
-        }),
-        withTiming(0, {
-          duration: 1800,
-          easing: Easing.inOut(Easing.quad),
-        }),
+        withTiming(1, { duration: 1700, easing: Easing.inOut(Easing.quad) }),
+        withTiming(0, { duration: 1700, easing: Easing.inOut(Easing.quad) }),
       ),
       -1,
       false,
@@ -70,28 +69,13 @@ export default function LoginScreenRoute() {
 
     drift.value = withRepeat(
       withSequence(
-        withTiming(1, {
-          duration: 2400,
-          easing: Easing.inOut(Easing.quad),
-        }),
-        withTiming(0, {
-          duration: 2400,
-          easing: Easing.inOut(Easing.quad),
-        }),
+        withTiming(1, { duration: 2100, easing: Easing.inOut(Easing.quad) }),
+        withTiming(0, { duration: 2100, easing: Easing.inOut(Easing.quad) }),
       ),
       -1,
       false,
     );
-
-    badgeScale.value = withRepeat(
-      withSequence(
-        withTiming(1.06, { duration: 900, easing: Easing.out(Easing.quad) }),
-        withTiming(1, { duration: 900, easing: Easing.in(Easing.quad) }),
-      ),
-      -1,
-      false,
-    );
-  }, [badgeScale, drift, pulse]);
+  }, [drift, pulse]);
 
   React.useEffect(() => {
     if (isAuthenticated) {
@@ -101,24 +85,20 @@ export default function LoginScreenRoute() {
 
   const orbLeftStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateX: -10 + pulse.value * 18 },
+      { translateX: -8 + pulse.value * 16 },
       { translateY: -6 + drift.value * 12 },
-      { scale: 0.95 + pulse.value * 0.14 },
+      { scale: 0.93 + pulse.value * 0.12 },
     ],
-    opacity: 0.24 + pulse.value * 0.3,
+    opacity: 0.22 + pulse.value * 0.25,
   }));
 
   const orbRightStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateX: 12 - pulse.value * 20 },
-      { translateY: 8 - drift.value * 16 },
-      { scale: 0.92 + pulse.value * 0.1 },
+      { translateX: 10 - pulse.value * 18 },
+      { translateY: 8 - drift.value * 14 },
+      { scale: 0.92 + pulse.value * 0.14 },
     ],
-    opacity: 0.2 + pulse.value * 0.26,
-  }));
-
-  const badgeStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: badgeScale.value }],
+    opacity: 0.2 + pulse.value * 0.22,
   }));
 
   const buttonAnimatedStyle = useAnimatedStyle(() => ({
@@ -135,30 +115,24 @@ export default function LoginScreenRoute() {
 
     const ok = signIn(username, password);
     if (!ok) {
+      setError("Invalid credentials. Please try again.");
       setIsSubmitting(false);
-      setError("Invalid credentials. Use admin / admin@123");
       return;
     }
 
     setTimeout(() => {
       router.replace("/(tabs)");
       setIsSubmitting(false);
-    }, 420);
+    }, 360);
   }, [isSubmitting, password, router, signIn, username]);
 
   const onForgot = React.useCallback(() => {
     router.push("/forgot-password");
   }, [router]);
 
-  const onUseDefault = React.useCallback(() => {
-    setUsername(DefaultAdminCredentials.username);
-    setPassword(DefaultAdminCredentials.password);
-    Alert.alert("Default credentials filled", "Tap Sign In to continue.");
-  }, []);
-
   return (
     <LinearGradient
-      colors={["#060C18", "#0A1630", "#0A2048", "#123677"]}
+      colors={["#0D0D0D", "#111111", "#151313"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.root}
@@ -175,16 +149,10 @@ export default function LoginScreenRoute() {
             entering={FadeInDown.duration(520)}
             style={styles.headerWrap}
           >
-            <Animated.View style={[styles.badge, badgeStyle]}>
-              <Ionicons name="sparkles" size={14} color={KindraColors.white} />
-              <Text style={styles.badgeText}>AI ADMIN ACCESS</Text>
-            </Animated.View>
-
-            <Text style={styles.welcome}>Welcome back</Text>
-            <Text style={styles.title}>SoulSync Control Room</Text>
+            <Text style={styles.brand}>SoulSync</Text>
+            <Text style={styles.title}>Welcome back</Text>
             <Text style={styles.subtitle}>
-              Animated secure login for monitoring match intelligence in real
-              time.
+              Sign in to continue to your matches
             </Text>
           </Animated.View>
 
@@ -202,13 +170,13 @@ export default function LoginScreenRoute() {
               <Ionicons
                 name="person-outline"
                 size={18}
-                color={KindraColors.textSecondary}
+                color={SoulTheme.redDark}
               />
               <TextInput
                 value={username}
                 onChangeText={setUsername}
-                placeholder="Enter username"
-                placeholderTextColor={KindraColors.textMuted}
+                placeholder="Email or username"
+                placeholderTextColor="rgba(18,18,18,0.45)"
                 style={styles.input}
                 autoCapitalize="none"
                 onFocus={() => setFocusedInput("username")}
@@ -226,13 +194,13 @@ export default function LoginScreenRoute() {
               <Ionicons
                 name="lock-closed-outline"
                 size={18}
-                color={KindraColors.textSecondary}
+                color={SoulTheme.redDark}
               />
               <TextInput
                 value={password}
                 onChangeText={setPassword}
-                placeholder="Enter password"
-                placeholderTextColor={KindraColors.textMuted}
+                placeholder="Password"
+                placeholderTextColor="rgba(18,18,18,0.45)"
                 style={styles.input}
                 secureTextEntry={isPasswordHidden}
                 autoCapitalize="none"
@@ -246,20 +214,14 @@ export default function LoginScreenRoute() {
                 <Ionicons
                   name={isPasswordHidden ? "eye-outline" : "eye-off-outline"}
                   size={18}
-                  color={KindraColors.textSecondary}
+                  color={SoulTheme.redDark}
                 />
               </Pressable>
             </View>
 
-            <View style={styles.rowActions}>
-              <Pressable onPress={onForgot} style={styles.forgotWrap}>
-                <Text style={styles.forgotText}>Forgot password?</Text>
-              </Pressable>
-
-              <Pressable onPress={onUseDefault} style={styles.quickFillWrap}>
-                <Text style={styles.quickFillText}>Quick fill admin</Text>
-              </Pressable>
-            </View>
+            <Pressable onPress={onForgot} style={styles.forgotWrap}>
+              <Text style={styles.forgotText}>Forgot password?</Text>
+            </Pressable>
 
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
@@ -280,7 +242,7 @@ export default function LoginScreenRoute() {
               }}
             >
               <LinearGradient
-                colors={["#2D8BC8", "#4A8CFF", "#8D95FF"]}
+                colors={[SoulTheme.red, "#F04B46"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.submitGradient}
@@ -291,9 +253,24 @@ export default function LoginScreenRoute() {
               </LinearGradient>
             </AnimatedPressable>
 
-            <Text style={styles.defaultText}>
-              Default admin: admin / admin@123
-            </Text>
+            <View style={styles.socialRow}>
+              <Pressable style={styles.ghostButton}>
+                <Ionicons
+                  name="logo-google"
+                  size={17}
+                  color={SoulTheme.textPrimary}
+                />
+                <Text style={styles.ghostText}>Sign in with Google</Text>
+              </Pressable>
+              <Pressable style={styles.ghostButton}>
+                <Ionicons
+                  name="logo-apple"
+                  size={17}
+                  color={SoulTheme.textPrimary}
+                />
+                <Text style={styles.ghostText}>Sign in with Apple</Text>
+              </Pressable>
+            </View>
           </Animated.View>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -305,6 +282,7 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     overflow: "hidden",
+    backgroundColor: SoulTheme.pageBg,
   },
   safeArea: {
     flex: 1,
@@ -322,152 +300,133 @@ const styles = StyleSheet.create({
   orbLeft: {
     width: 240,
     height: 240,
-    top: -70,
-    left: -40,
-    backgroundColor: "rgba(62, 141, 255, 0.24)",
+    top: -60,
+    left: -60,
+    backgroundColor: "rgba(229, 57, 53, 0.28)",
   },
   orbRight: {
-    width: 310,
-    height: 310,
+    width: 300,
+    height: 300,
     right: -120,
-    bottom: -80,
-    backgroundColor: "rgba(38, 98, 214, 0.2)",
+    bottom: -90,
+    backgroundColor: "rgba(229, 57, 53, 0.22)",
   },
   headerWrap: {
     gap: 8,
   },
-  badge: {
-    alignSelf: "flex-start",
-    borderRadius: 999,
-    backgroundColor: KindraColors.primaryMid,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-  },
-  badgeText: {
-    color: KindraColors.white,
-    fontSize: 10,
-    letterSpacing: 0.6,
-    fontFamily: KindraFonts.bodyBold,
-  },
-  welcome: {
-    color: KindraColors.primaryMid,
-    fontSize: 14,
-    fontFamily: KindraFonts.bodyMedium,
-    letterSpacing: 0.2,
+  brand: {
+    color: SoulTheme.red,
+    fontSize: 15,
+    letterSpacing: 0.3,
+    fontFamily: "Inter_600SemiBold",
   },
   title: {
-    color: KindraColors.text,
-    fontSize: 34,
-    lineHeight: 38,
-    fontFamily: KindraFonts.heading,
+    color: SoulTheme.textOnDark,
+    fontSize: 36,
+    lineHeight: 40,
+    fontFamily: "Inter_800ExtraBold",
   },
   subtitle: {
-    color: KindraColors.textSecondary,
+    color: SoulTheme.textMuted,
     fontSize: 14,
     lineHeight: 20,
-    fontFamily: KindraFonts.body,
+    fontFamily: "Inter_500Medium",
     maxWidth: 340,
   },
   card: {
     borderRadius: 22,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: KindraColors.border,
-    backgroundColor: "rgba(10, 18, 35, 0.86)",
-    ...KindraShadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 16,
-    shadowOpacity: 0.28,
-    elevation: 6,
+    padding: 18,
+    backgroundColor: SoulTheme.cardBg,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 5,
   },
   label: {
-    color: KindraColors.text,
+    color: SoulTheme.textPrimary,
     fontSize: 13,
     marginBottom: 8,
-    fontFamily: KindraFonts.bodyBold,
+    fontFamily: "Inter_600SemiBold",
   },
   spacingTop: {
-    marginTop: 14,
+    marginTop: 12,
   },
   inputWrap: {
-    minHeight: 48,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: KindraColors.border,
-    backgroundColor: "rgba(13, 24, 47, 0.88)",
+    minHeight: 50,
+    borderRadius: 16,
+    backgroundColor: SoulTheme.inputBg,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
     paddingHorizontal: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
   },
   inputWrapFocused: {
-    borderColor: KindraColors.primaryMid,
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(229, 57, 53, 0.3)",
   },
   input: {
     flex: 1,
-    color: KindraColors.text,
-    fontFamily: KindraFonts.body,
+    color: SoulTheme.textPrimary,
+    fontFamily: "Inter_500Medium",
     fontSize: 14,
     paddingVertical: 10,
   },
-  rowActions: {
-    marginTop: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
   forgotWrap: {
-    alignSelf: "flex-start",
+    alignSelf: "flex-end",
+    marginTop: 10,
   },
   forgotText: {
-    color: KindraColors.primaryMid,
-    fontFamily: KindraFonts.bodyMedium,
+    color: SoulTheme.red,
     fontSize: 13,
-  },
-  quickFillWrap: {
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: KindraColors.border,
-    backgroundColor: "rgba(14, 25, 48, 0.9)",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  quickFillText: {
-    color: KindraColors.textSecondary,
-    fontFamily: KindraFonts.bodyMedium,
-    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
   },
   errorText: {
-    marginTop: 10,
-    color: KindraColors.error,
-    fontFamily: KindraFonts.bodyMedium,
-    fontSize: 13,
+    marginTop: 8,
+    color: SoulTheme.danger,
+    fontSize: 12,
+    fontFamily: "Inter_500Medium",
   },
   submitButton: {
-    marginTop: 14,
-    borderRadius: 14,
+    marginTop: 12,
+    borderRadius: 16,
     overflow: "hidden",
   },
   submitGradient: {
-    minHeight: 50,
-    borderRadius: 14,
+    minHeight: 52,
     alignItems: "center",
     justifyContent: "center",
   },
   submitText: {
-    color: KindraColors.white,
+    color: "#FFFFFF",
     fontSize: 15,
-    letterSpacing: 0.3,
-    fontFamily: KindraFonts.bodyBold,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 0.2,
   },
-  defaultText: {
+  socialRow: {
     marginTop: 12,
-    color: KindraColors.textSecondary,
-    fontSize: 12,
-    fontFamily: KindraFonts.body,
-    textAlign: "center",
+    gap: 10,
+  },
+  ghostButton: {
+    minHeight: 48,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(18,18,18,0.15)",
+    backgroundColor: "rgba(255,255,255,0.72)",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
+  ghostText: {
+    color: SoulTheme.textPrimary,
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
   },
 });
