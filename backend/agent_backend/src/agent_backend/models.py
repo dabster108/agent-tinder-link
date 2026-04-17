@@ -25,3 +25,27 @@ class BehaviorUpdateResult:
 class MatchingRunResult:
     raw_output: str
     parsed_matches: Dict[str, Any]
+
+
+@dataclass
+class ConversationContextResult:
+    raw_output: str
+    persona_anchor: Dict[str, Any]
+
+
+@dataclass
+class ConversationTurnResult:
+    raw_output: str
+    message: str
+
+
+@dataclass
+class ConversationEvaluationResult:
+    raw_output: str
+    evaluation: Dict[str, Any]
+
+
+@dataclass
+class ConversationVerdictResult:
+    raw_output: str
+    verdict_payload: Dict[str, Any]

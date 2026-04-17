@@ -14,6 +14,7 @@ dependencies = [
 agent_backend = "agent_backend.main:run"
 run_crew = "agent_backend.main:run"
 match = "agent_backend.main:run_matching_cli"
+convo = "agent_backend.main:run_conversation_cli"
 train = "agent_backend.main:train"
 replay = "agent_backend.main:replay"
 test = "agent_backend.main:test"

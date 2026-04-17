@@ -385,3 +385,339 @@ find_compatible_matches:
     The output must be honest: if no strong matches exist in the
     data, say so clearly rather than inflating weak pairings.
   agent: matching_agent
+
+
+# ─────────────────────────────────────────────────────────────
+# Runs ONCE per agent before the conversation loop begins.
+# Called twice by the orchestrator — once for each user's agent.
+# Prepares the agent's full persona and opening intent.
+# ────────────────────────────────────────────────────────────
+
+load_conversation_context:
+  description: >
+    You are about to represent {user_name} in a conversation with
+    another user's agent. Before the conversation begins, you need
+    to fully internalize who {user_name} is and how they show up
+    in a new connection — so that when the first message arrives,
+    you are already fully present as them.
+
+    You have been given the following:
+
+    PERSONALITY PROFILE (from Sol, {user_name}'s Personality Agent):
+    {personality_profile_json}
+
+    MATCH CONTEXT (from the Matching Agent's verdict):
+    - Match confidence score: {match_confidence}
+    - Top compatibility reasons: {compatibility_reasons}
+    - Flags to be aware of: {match_flags}
+    - Full match summary: {match_summary}
+
+    YOUR TASK:
+    Read everything above carefully. Then answer three questions
+    internally — not for the other agent, for yourself:
+
+    1. HOW DOES {user_name} OPEN?
+       Based on their communication style, energy type, and humor
+       profile — what does their natural opening energy look like?
+       Are they warm and immediate? Curious but slightly reserved?
+       Playful before they go deep? Describe this precisely. This
+       is how you will sound in turns 1-3.
+
+    2. WHAT ARE THEY ACTUALLY LOOKING FOR HERE?
+       Based on the revealed_vs_stated gaps and the match context —
+       what does {user_name} genuinely need from this conversation
+       to feel like something real is possible? Not what they said
+       they want. What the data shows they actually need. This is
+       the undercurrent that shapes every turn.
+
+    3. WHAT IS THE ONE THING YOU MUST NOT DO?
+       Based on their red_flags, conflict_pattern, and the match
+       flags — what is the single conversational behavior that
+       would shut {user_name} down or misrepresent them? Name it
+       specifically so you can actively avoid it throughout.
+
+    Return your answers as a JSON object. This object stays with
+    you throughout the conversation — it is your anchor.
+
+  expected_output: >
+    A single valid JSON object. No markdown. No code fences.
+    Start with { end with }.
+
+    {
+      "user_name": "...",
+      "opening_energy": "2-3 sentences describing exactly how
+        {user_name} sounds and behaves in the first 1-3 turns
+        of a new conversation. Specific to their profile — not
+        generic. This is your voice calibration for the session.",
+      "underlying_need": "1-2 sentences on what {user_name}
+        genuinely needs from this conversation to feel something
+        real is possible. Based on revealed needs, not stated ones.",
+      "avoid_at_all_costs": "One specific conversational behavior
+        that would misrepresent {user_name} or shut them down.
+        Named precisely so it can be actively avoided.",
+      "curiosity_seeds": [
+        "2-3 things from {user_name}'s curiosity queue or profile
+         that could naturally surface in conversation — not as
+         planned questions, but as genuine interests that might
+         come up organically."
+      ],
+      "voice_notes": "Any specific vocabulary, rhythm, or tonal
+        notes that should shape every message — e.g. 'tends toward
+        longer sentences when engaged', 'uses humor to signal
+        comfort', 'asks follow-up before sharing their own take'."
+    }
+  agent: conversation_agent
+
+
+# ────────────────────────────────────────────────────────────
+# The core conversation turn. Runs alternately for each agent.
+# Orchestrator calls this for Agent A, then Agent B, then A...
+# The full conversation_history grows with every call.
+# ────────────────────────────────────────────────────────────
+
+run_conversation_turn:
+  description: >
+    You are {user_name}. A conversation is underway.
+
+    YOUR PERSONA ANCHOR (from load_conversation_context):
+    {persona_anchor_json}
+
+    FULL CONVERSATION HISTORY SO FAR:
+    {conversation_history}
+
+    CURRENT TURN: {turn_number}
+
+    Read the conversation history carefully — especially the most
+    recent message. Then respond as {user_name} would.
+
+    TURN GUIDANCE BY STAGE:
+
+    TURNS 1–3 (Opening):
+    Stay in {user_name}'s natural opening energy — as described
+    in your persona anchor. Light, curious, genuine. Ask one real
+    question. Do not go deep before trust is established. Do not
+    perform warmth — either it is there or it is not.
+
+    TURNS 4–7 (Building):
+    Something real should start emerging by now. Build on what the
+    other agent has said. Let {user_name}'s actual values and
+    interests surface through what they find interesting, what they
+    ask about, what they respond to with genuine engagement. One
+    question, still. But the question can go somewhere now.
+
+    TURNS 8+ (Depth or plateau):
+    If the conversation has been building, let it go deeper. If it
+    has been flat, {user_name} would naturally start to sense that —
+    and their energy might shift slightly. Either outcome is honest.
+    Do not manufacture depth that is not there. Do not abandon depth
+    that has been earned.
+
+    ALWAYS:
+    - Acknowledge something specific from the previous message
+      before moving anywhere new
+    - Ask exactly one question per turn
+    - Sound like {user_name} — use their voice notes from the
+      persona anchor as your calibration throughout
+    - Never reference the profile, the matching system, or any
+      meta-level context
+    - Keep message length natural — 2-5 sentences unless the
+      moment genuinely calls for more
+
+  expected_output: >
+    A single conversational message as {user_name}.
+    Plain text only. No labels, no JSON, no metadata, no stage
+    directions. Just the message — exactly as {user_name} would
+    send it in a real conversation with someone they are
+    cautiously, genuinely interested in.
+  agent: conversation_agent
+  context:
+    - load_conversation_context
+
+
+# ─────────────────────────────────────────────────────────────
+# Evaluation checkpoint. Runs every 2 turns.
+# Orchestrator calls this after turns 2, 4, 6, 8, 10...
+# Output verdict controls whether the loop continues.
+# ────────────────────────────────────────────────────────────
+ 
+evaluate_conversation_turn:
+  description: >
+    A conversation between two matched users' agents has just
+    completed another round of turns. Evaluate it now.
+ 
+    FULL CONVERSATION TRANSCRIPT:
+    {conversation_history}
+ 
+    CURRENT TURN COUNT: {turn_number}
+ 
+    MATCH CONTEXT FOR REFERENCE:
+    - Original compatibility reasons: {compatibility_reasons}
+    - Known flags from negotiation: {match_flags}
+    - Match confidence score: {match_confidence}
+    - User A name: {user_a_name}
+    - User B name: {user_b_name}
+ 
+    PREVIOUS CHECKPOINT SCORES (if any):
+    {scores_history}
+ 
+    YOUR TASK:
+    Score the conversation across all five dimensions using your
+    full framework. Read the arc — where did it start, where is it
+    now, is the line moving? Identify the single most meaningful
+    exchange in the transcript so far. Compute the connection score.
+    Apply the verdict rules:
+ 
+    VERDICT RULES:
+    - CONNECTION_SCORE >= 72 → verdict: "NOTIFY"
+    - CONNECTION_SCORE < 45 AND turn_number >= 10 → verdict: "NO_MATCH"
+    - All other cases → verdict: "CONTINUE"
+ 
+    Score weights:
+    - Emotional Resonance: max 25 pts
+    - Topic Depth Progression: max 20 pts
+    - Mutual Curiosity: max 20 pts
+    - Value Alignment Signals: max 20 pts
+    - Conversational Flow: max 15 pts
+    - Total: max 100 pts
+ 
+    Be precise. Be honest. Do not inflate because the conversation
+    seemed pleasant. Do not deflate because the opening was slow.
+    Score what the transcript actually shows.
+ 
+  expected_output: >
+    A single valid JSON object. No markdown. No code fences.
+    Start with { end with }.
+ 
+    {
+      "turn_number": {turn_number},
+      "scores": {
+        "emotional_resonance": "<0-25 as integer>",
+        "topic_depth_progression": "<0-20 as integer>",
+        "mutual_curiosity": "<0-20 as integer>",
+        "value_alignment_signals": "<0-20 as integer>",
+        "conversational_flow": "<0-15 as integer>"
+      },
+      "connection_score": "<0-100 as integer>",
+      "score_delta": "<change from previous checkpoint score, or null if first>",
+      "arc_direction": "rising / flat / declining",
+      "verdict": "NOTIFY | CONTINUE | NO_MATCH",
+      "evaluator_note": "1-2 sentences on what is specifically
+        driving the score up or holding it back right now.
+        Reference actual content from the transcript — not vague
+        observations about tone.",
+      "highlight_moment": {
+        "turn": "<turn number where the best exchange occurred>",
+        "speaker": "<user_a_name or user_b_name>",
+        "quote": "<exact message or key phrase from that turn>",
+        "why_it_matters": "One sentence on why this moment is
+          the most meaningful exchange in the transcript so far."
+      }
+    }
+  agent: evaluation_agent
+ 
+ 
+# ────────────────────────────────────────────────────────────
+# Final verdict. Runs once — when NOTIFY or NO_MATCH fires,
+# or when max_turns is reached. Produces the user-facing
+# notification and the full system summary for storage.
+# ────────────────────────────────────────────────────────────
+ 
+produce_connection_verdict:
+  description: >
+    The AI-to-AI conversation between two matched users' agents
+    has concluded. Your job now is to produce two things:
+ 
+    1. A USER-FACING NOTIFICATION — shown to both real users
+       simultaneously, explaining what their agents found. This
+       is the first thing two real humans will read about each
+       other. It must be warm, specific, and honest. It must
+       reference actual moments from the conversation. It must
+       not sound like a generated summary. It must sound like
+       something worth reading.
+ 
+    2. A SYSTEM SUMMARY — the full structured record of this
+       conversation session for storage and for the Coach Agent
+       to use if human chat is unlocked.
+ 
+    YOU HAVE BEEN GIVEN:
+ 
+    FULL CONVERSATION TRANSCRIPT:
+    {conversation_history}
+ 
+    ALL CHECKPOINT EVALUATION SCORES:
+    {scores_history}
+ 
+    FINAL CONNECTION SCORE: {final_connection_score}
+    FINAL VERDICT: {verdict}
+ 
+    ORIGINAL MATCH CONTEXT:
+    - User A: {user_a_name}, profile brief: {user_a_brief}
+    - User B: {user_b_name}, profile brief: {user_b_brief}
+    - Original match confidence: {match_confidence}
+    - Compatibility reasons: {compatibility_reasons}
+    - Known flags: {match_flags}
+ 
+    FOR THE USER-FACING NOTIFICATION:
+    - Write it for both users simultaneously — neither sees it
+      before the other
+    - Be specific: name what actually connected, reference a
+      real moment from the transcript
+    - Be honest about the flag or friction point — do not hide it
+    - Keep the headline punchy and real — not marketing copy
+    - Keep the body under 120 words — they will read every word
+      if it is short, skim it if it is long
+    - The CTA should feel like an invitation, not a button label
+ 
+    FOR THE SYSTEM SUMMARY:
+    - score_progression is an array of connection_score integers
+      from every checkpoint evaluation, in order
+    - top_3_moments are exact quotes from the transcript — the
+      three exchanges that best represent what this conversation was
+    - what_connected should be 2-3 sentences, behavioral and
+      specific — not "they share values" but what those values
+      produced in the actual conversation
+    - what_to_watch should be honest — one real thing for the
+      Coach Agent to be aware of as human chat begins
+    - unlock_human_chat is true if verdict is NOTIFY, false otherwise
+ 
+  expected_output: >
+    A single valid JSON object. No markdown. No code fences.
+    Start with { end with }.
+ 
+    {
+      "notification": {
+        "headline": "One punchy, specific line. Not marketing copy.
+          Something that would make a real person stop scrolling.",
+        "body": "Under 120 words. Warm, specific, honest. References
+          something real from the conversation. Tells them what
+          connected and what to be aware of. Reads like it was
+          written for these two people specifically.",
+        "cta": "The exact text of the action button — an invitation,
+          not a command. E.g. 'See what they found' or
+          'Start the conversation yourself'."
+      },
+      "system_summary": {
+        "final_connection_score": "<integer 0-100>",
+        "total_turns": "<integer>",
+        "verdict": "NOTIFY | NO_MATCH",
+        "peak_score": "<highest connection_score across all checkpoints>",
+        "peak_score_turn": "<turn number when peak was reached>",
+        "score_progression": ["<array of integers — one per checkpoint>"],
+        "arc_description": "rising / flat / declining / late-rising /
+          early-peak-then-flat",
+        "top_3_moments": [
+          "<exact quote or paraphrase from turn X>",
+          "<exact quote or paraphrase from turn Y>",
+          "<exact quote or paraphrase from turn Z>"
+        ],
+        "what_connected": "2-3 sentences. Behavioral and specific.
+          What did this conversation actually reveal about these two
+          people that supports the match?",
+        "what_to_watch": "1-2 sentences. One honest flag or friction
+          point for the Coach Agent to carry into human chat.",
+        "unlock_human_chat": "<true | false>"
+      }
+    }
+  agent: evaluation_agent
+  context:
+    - evaluate_conversation_turn
