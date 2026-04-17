@@ -9,12 +9,14 @@ import {
   StyleSheet,
   Text,
   View,
+  type StyleProp,
+  type ViewStyle,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, {
   Easing,
-  FadeIn,
   FadeInDown,
+  FadeInUp,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -23,129 +25,97 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import {
-  KindraColors,
-  KindraFonts,
-  KindraShadow,
-} from "@/constants/kindraTheme";
+import { SoulCardShadow, SoulSyncTheme } from "@/constants/soulSyncTheme";
 
-type NewMatch = {
+type Spark = {
   id: string;
   name: string;
-  avatar: string;
   vibe: string;
   score: number;
+  avatar: string;
 };
 
-type Conversation = {
+type MatchItem = {
   id: string;
   name: string;
+  note: string;
+  score: number;
+  status: "Ready" | "New" | "Challenge";
   avatar: string;
-  preview: string;
-  time: string;
-  unread: boolean;
-  energy: string;
-  compatibility: number;
 };
 
-const NEW_MATCHES: NewMatch[] = [
-  { id: "n1", name: "Mira", avatar: "M", vibe: "Intentional", score: 96 },
-  { id: "n2", name: "Rohan", avatar: "R", vibe: "Playful", score: 91 },
-  { id: "n3", name: "Aanya", avatar: "A", vibe: "Calm", score: 94 },
-  { id: "n4", name: "Kabir", avatar: "K", vibe: "Curious", score: 89 },
-  { id: "n5", name: "Sara", avatar: "S", vibe: "Witty", score: 92 },
+const SPARKS: Spark[] = [
+  { id: "s1", name: "Mira", vibe: "Intentional", score: 96, avatar: "M" },
+  { id: "s2", name: "Rohan", vibe: "Playful", score: 91, avatar: "R" },
+  { id: "s3", name: "Aanya", vibe: "Calm", score: 94, avatar: "A" },
+  { id: "s4", name: "Kabir", vibe: "Curious", score: 89, avatar: "K" },
 ];
 
-const CONVERSATIONS: Conversation[] = [
+const MATCHES: MatchItem[] = [
   {
-    id: "c1",
-    name: "Mira",
+    id: "m1",
+    name: "Mira Sen",
+    note: "Agent note: values alignment is unusually high this week.",
+    score: 94,
+    status: "Ready",
     avatar: "M",
-    preview: "Loved your idea on mindful dating prompts.",
-    time: "2m",
-    unread: true,
-    energy: "Warm",
-    compatibility: 96,
   },
   {
-    id: "c2",
-    name: "Rohan",
+    id: "m2",
+    name: "Rohan Mehta",
+    note: "Strong momentum. Suggest one voice-note opener.",
+    score: 91,
+    status: "New",
     avatar: "R",
-    preview: "Friday coffee still works for me.",
-    time: "15m",
-    unread: false,
-    energy: "Playful",
-    compatibility: 91,
   },
   {
-    id: "c3",
-    name: "Aanya",
+    id: "m3",
+    name: "Aanya Rao",
+    note: "Great match quality, but schedule preference mismatch flagged.",
+    score: 88,
+    status: "Challenge",
     avatar: "A",
-    preview: "Your travel stories are actually elite.",
-    time: "1h",
-    unread: true,
-    energy: "Steady",
-    compatibility: 94,
   },
   {
-    id: "c4",
-    name: "Kabir",
-    avatar: "K",
-    preview: "Want to compare playlists this weekend?",
-    time: "4h",
-    unread: false,
-    energy: "Curious",
-    compatibility: 89,
-  },
-  {
-    id: "c5",
-    name: "Sara",
+    id: "m4",
+    name: "Sara Iyer",
+    note: "Conversation rhythm is clean and reciprocal.",
+    score: 92,
+    status: "Ready",
     avatar: "S",
-    preview: "My agent says we should plan a call.",
-    time: "1d",
-    unread: false,
-    energy: "Focused",
-    compatibility: 92,
   },
 ];
 
-const PULSE_BARS = [0.68, 0.9, 0.58, 0.82, 0.72];
+const FILTERS = ["All", "New", "Challenges"] as const;
+type FilterValue = (typeof FILTERS)[number];
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-function LiftPressable({
-  children,
+function ScaleCard({
   style,
   onPress,
+  children,
 }: {
-  children: React.ReactNode;
-  style?: object;
+  style?: StyleProp<ViewStyle>;
   onPress: () => void;
+  children: React.ReactNode;
 }) {
   const scale = useSharedValue(1);
-  const hover = useSharedValue(0);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }, { translateY: -2 * hover.value }],
-    shadowOpacity: 0.12 + hover.value * 0.14,
+    transform: [{ scale: scale.value }],
   }));
 
   return (
     <AnimatedPressable
       style={[style, animatedStyle]}
+      onPress={onPress}
       onPressIn={() => {
-        scale.value = withSpring(0.965, { damping: 16, stiffness: 300 });
+        scale.value = withSpring(0.97, { damping: 16, stiffness: 320 });
       }}
       onPressOut={() => {
-        scale.value = withSpring(1, { damping: 16, stiffness: 300 });
+        scale.value = withSpring(1, { damping: 16, stiffness: 320 });
       }}
-      onHoverIn={() => {
-        hover.value = withTiming(1, { duration: 180 });
-      }}
-      onHoverOut={() => {
-        hover.value = withTiming(0, { duration: 180 });
-      }}
-      onPress={onPress}
     >
       {children}
     </AnimatedPressable>
@@ -153,234 +123,180 @@ function LiftPressable({
 }
 
 export default function MatchesScreen() {
-  const heroDrift = useSharedValue(0);
-  const radarPulse = useSharedValue(0);
+  const [activeFilter, setActiveFilter] = React.useState<FilterValue>("All");
+  const pulse = useSharedValue(0);
 
   React.useEffect(() => {
-    heroDrift.value = withRepeat(
+    pulse.value = withRepeat(
       withSequence(
-        withTiming(1, {
-          duration: 2900,
-          easing: Easing.inOut(Easing.sin),
-        }),
-        withTiming(0, {
-          duration: 2600,
-          easing: Easing.inOut(Easing.quad),
-        }),
+        withTiming(1, { duration: 1800, easing: Easing.inOut(Easing.quad) }),
+        withTiming(0, { duration: 1800, easing: Easing.inOut(Easing.quad) }),
       ),
       -1,
       false,
     );
+  }, [pulse]);
 
-    radarPulse.value = withRepeat(
-      withSequence(
-        withTiming(1, {
-          duration: 1700,
-          easing: Easing.out(Easing.cubic),
-        }),
-        withTiming(0, {
-          duration: 1700,
-          easing: Easing.inOut(Easing.quad),
-        }),
-      ),
-      -1,
-      false,
-    );
-  }, [heroDrift, radarPulse]);
+  const glowStyle = useAnimatedStyle(() => ({
+    opacity: 0.2 + pulse.value * 0.24,
+    transform: [{ scale: 0.96 + pulse.value * 0.08 }],
+  }));
 
-  const onPressItem = React.useCallback(() => {
+  const filteredMatches = React.useMemo(() => {
+    if (activeFilter === "All") {
+      return MATCHES;
+    }
+    if (activeFilter === "New") {
+      return MATCHES.filter((item) => item.status === "New");
+    }
+    return MATCHES.filter((item) => item.status === "Challenge");
+  }, [activeFilter]);
+
+  const onPressAny = React.useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
 
-  const heroStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: -3 + heroDrift.value * 6 }],
-  }));
-
-  const orbStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: -8 + heroDrift.value * 16 }],
-    opacity: 0.42 + heroDrift.value * 0.3,
-  }));
-
-  const radarStyle = useAnimatedStyle(() => ({
-    opacity: 0.34 + radarPulse.value * 0.42,
-    transform: [{ scale: 0.92 + radarPulse.value * 0.1 }],
-  }));
-
-  const barPulseStyle = useAnimatedStyle(() => ({
-    opacity: 0.62 + radarPulse.value * 0.26,
-  }));
-
   return (
-    <View style={styles.screen}>
+    <View style={styles.root}>
+      <LinearGradient
+        colors={[SoulSyncTheme.canvas, SoulSyncTheme.canvasAlt, "#1A1312"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+
+      <Animated.View style={[styles.glow, glowStyle]} />
+
       <SafeAreaView edges={["top"]} style={styles.safeArea}>
         <FlatList
-          data={CONVERSATIONS}
+          data={filteredMatches}
           keyExtractor={(item) => item.id}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
             <View>
               <Animated.View
-                entering={FadeInDown.duration(560)}
-                style={[styles.hero, heroStyle]}
+                entering={FadeInDown.duration(440)}
+                style={styles.hero}
               >
-                <LinearGradient
-                  colors={["#0A101F", "#0E1A34", "#10224A"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.heroGradient}
-                >
-                  <Animated.View
-                    style={[styles.heroOrb, styles.heroOrbLeft, orbStyle]}
-                  />
-                  <Animated.View
-                    style={[styles.heroOrb, styles.heroOrbRight, orbStyle]}
-                  />
+                <Text style={styles.heroBrand}>SoulSync</Text>
+                <Text style={styles.heroTitle}>Match Queue</Text>
+                <Text style={styles.heroSubtitle}>
+                  Modern matching intelligence with real-time chemistry signals.
+                </Text>
 
-                  <View style={styles.heroRowTop}>
-                    <View style={styles.heroPill}>
-                      <Ionicons
-                        name="sparkles"
-                        size={13}
-                        color={KindraColors.white}
-                      />
-                      <Text style={styles.heroPillText}>Matches Studio</Text>
-                    </View>
-                    <Text style={styles.heroMeta}>7 curated today</Text>
+                <View style={styles.badgesRow}>
+                  <View style={styles.counterBadge}>
+                    <Text style={styles.counterValue}>32</Text>
+                    <Text style={styles.counterText}>Live Fits</Text>
                   </View>
-
-                  <Text style={styles.heroTitle}>
-                    Fresh chemistry, ready to chat
-                  </Text>
-                  <Text style={styles.heroSubtitle}>
-                    Every card is AI-ranked, but paced to feel personal.
-                  </Text>
-                </LinearGradient>
+                  <View style={styles.counterBadge}>
+                    <Text style={styles.counterValue}>14</Text>
+                    <Text style={styles.counterText}>Agent Notes</Text>
+                  </View>
+                </View>
               </Animated.View>
 
-              <Animated.View
-                entering={FadeInDown.delay(70).duration(500)}
-                style={styles.sectionBlock}
-              >
-                <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>Fresh Sparks</Text>
-                  <Text style={styles.sectionAction}>View all</Text>
-                </View>
-
+              <Animated.View entering={FadeInDown.delay(60).duration(450)}>
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  keyboardShouldPersistTaps="handled"
-                  contentContainerStyle={styles.newMatchesRow}
+                  contentContainerStyle={styles.sparkRow}
                 >
-                  {NEW_MATCHES.map((item, index) => (
-                    <Animated.View
-                      key={item.id}
-                      entering={FadeInDown.delay(110 + index * 70).duration(
-                        350,
-                      )}
+                  {SPARKS.map((spark) => (
+                    <ScaleCard
+                      key={spark.id}
+                      style={styles.sparkCard}
+                      onPress={onPressAny}
                     >
-                      <LiftPressable
-                        style={styles.newMatchCard}
-                        onPress={onPressItem}
-                      >
-                        <View style={styles.newAvatarWrap}>
-                          <LinearGradient
-                            colors={["#5DA4FF", "#2E72F3"]}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            style={styles.newAvatarCore}
-                          >
-                            <Text style={styles.newAvatarText}>
-                              {item.avatar}
-                            </Text>
-                          </LinearGradient>
-                          <View style={styles.newBadge}>
-                            <Text style={styles.newBadgeText}>
-                              {item.score}%
-                            </Text>
-                          </View>
-                        </View>
-
-                        <Text style={styles.newMatchName}>{item.name}</Text>
-                        <Text style={styles.newMatchVibe}>{item.vibe}</Text>
-                      </LiftPressable>
-                    </Animated.View>
+                      <View style={styles.sparkAvatar}>
+                        <Text style={styles.sparkAvatarText}>
+                          {spark.avatar}
+                        </Text>
+                      </View>
+                      <Text style={styles.sparkName}>{spark.name}</Text>
+                      <Text style={styles.sparkVibe}>{spark.vibe}</Text>
+                      <Text style={styles.sparkScore}>{spark.score}%</Text>
+                    </ScaleCard>
                   ))}
                 </ScrollView>
               </Animated.View>
 
               <Animated.View
-                entering={FadeInDown.delay(130).duration(520)}
-                style={styles.pulseCard}
+                entering={FadeInUp.delay(90).duration(420)}
+                style={styles.filterRow}
               >
-                <Animated.View style={[styles.pulseRadarRing, radarStyle]} />
-
-                <View style={styles.pulseTopRow}>
-                  <Text style={styles.pulseTitle}>Compatibility Pulse</Text>
-                  <Text style={styles.pulseMeta}>Live signal</Text>
-                </View>
-
-                <View style={styles.pulseBars}>
-                  {PULSE_BARS.map((value, idx) => (
-                    <Animated.View
-                      key={`pulse-${idx}`}
+                {FILTERS.map((filter) => {
+                  const isActive = activeFilter === filter;
+                  return (
+                    <Pressable
+                      key={filter}
                       style={[
-                        styles.pulseBar,
-                        barPulseStyle,
-                        { height: 38 + value * 24 },
+                        styles.filterChip,
+                        isActive && styles.filterChipActive,
                       ]}
-                    />
-                  ))}
-                </View>
+                      onPress={() => {
+                        setActiveFilter(filter);
+                        onPressAny();
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.filterText,
+                          isActive && styles.filterTextActive,
+                        ]}
+                      >
+                        {filter}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </Animated.View>
             </View>
           }
           renderItem={({ item, index }) => (
             <Animated.View
-              entering={FadeIn.delay(110 + index * 60).duration(320)}
+              entering={FadeInUp.delay(120 + index * 50).duration(320)}
             >
-              <LiftPressable
-                style={styles.conversationCard}
-                onPress={onPressItem}
-              >
-                {item.unread ? <View style={styles.unreadBar} /> : null}
-
-                <View style={styles.rowAvatarWrap}>
-                  <View style={styles.rowAvatar}>
-                    <Text style={styles.rowAvatarText}>{item.avatar}</Text>
+              <ScaleCard style={styles.matchCard} onPress={onPressAny}>
+                <View style={styles.cardTopRow}>
+                  <View style={styles.avatarWrap}>
+                    <Text style={styles.avatarText}>{item.avatar}</Text>
                   </View>
-                </View>
 
-                <View style={styles.messageCol}>
-                  <View style={styles.nameRow}>
-                    <Text
-                      style={[
-                        styles.nameText,
-                        item.unread && styles.nameUnread,
-                      ]}
-                    >
-                      {item.name}
-                    </Text>
-                    <View style={styles.energyPill}>
-                      <Text style={styles.energyText}>{item.energy}</Text>
+                  <View style={styles.cardMain}>
+                    <Text style={styles.name}>{item.name}</Text>
+                    <Text style={styles.note}>{item.note}</Text>
+                  </View>
+
+                  <View style={styles.rightCol}>
+                    <View style={styles.scorePill}>
+                      <Text style={styles.scoreText}>{item.score}%</Text>
                     </View>
+                    <Text style={styles.statusText}>{item.status}</Text>
                   </View>
-
-                  <Text style={styles.previewText} numberOfLines={1}>
-                    {item.preview}
-                  </Text>
                 </View>
 
-                <View style={styles.metaCol}>
-                  <Text style={styles.timeText}>{item.time}</Text>
-                  <Text style={styles.compatibilityText}>
-                    {item.compatibility}%
-                  </Text>
-                  {item.unread ? <View style={styles.unreadDot} /> : null}
+                <View style={styles.cardActions}>
+                  <Pressable style={styles.ghostButton} onPress={onPressAny}>
+                    <Ionicons
+                      name="document-text-outline"
+                      size={15}
+                      color={SoulSyncTheme.red}
+                    />
+                    <Text style={styles.ghostButtonText}>Notes</Text>
+                  </Pressable>
+
+                  <Pressable style={styles.primaryButton} onPress={onPressAny}>
+                    <Ionicons
+                      name="chatbubble-ellipses"
+                      size={15}
+                      color="#FFF"
+                    />
+                    <Text style={styles.primaryButtonText}>Start Chat</Text>
+                  </Pressable>
                 </View>
-              </LiftPressable>
+              </ScaleCard>
             </Animated.View>
           )}
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
@@ -391,313 +307,241 @@ export default function MatchesScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  root: {
     flex: 1,
-    backgroundColor: KindraColors.background,
+    backgroundColor: SoulSyncTheme.canvas,
   },
   safeArea: {
     flex: 1,
-    backgroundColor: KindraColors.background,
   },
-  listContent: {
-    paddingBottom: 116,
-    paddingTop: 12,
+  glow: {
+    position: "absolute",
+    top: -120,
+    right: -80,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: "rgba(229,57,53,0.24)",
+  },
+  content: {
     paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 120,
   },
   hero: {
-    borderRadius: 24,
-    overflow: "hidden",
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "rgba(62, 141, 255, 0.28)",
+    borderRadius: 22,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    padding: 16,
+    marginBottom: 14,
   },
-  heroGradient: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    minHeight: 174,
-    position: "relative",
-  },
-  heroOrb: {
-    position: "absolute",
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    backgroundColor: "rgba(75, 149, 255, 0.2)",
-  },
-  heroOrbLeft: {
-    top: -90,
-    left: -54,
-  },
-  heroOrbRight: {
-    bottom: -100,
-    right: -68,
-  },
-  heroRowTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  heroPill: {
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.18)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.22)",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  heroPillText: {
-    color: KindraColors.white,
-    fontFamily: KindraFonts.bodyMedium,
-    fontSize: 11,
-  },
-  heroMeta: {
-    color: KindraColors.primaryLight,
-    fontFamily: KindraFonts.body,
-    fontSize: 11,
+  heroBrand: {
+    color: SoulSyncTheme.red,
+    fontSize: 14,
+    fontFamily: "Inter_700Bold",
   },
   heroTitle: {
-    marginTop: 12,
-    color: KindraColors.white,
-    fontFamily: KindraFonts.heading,
-    fontSize: 30,
-    lineHeight: 34,
-    maxWidth: 280,
+    marginTop: 6,
+    color: SoulSyncTheme.onDark,
+    fontSize: 28,
+    fontFamily: "Inter_800ExtraBold",
   },
   heroSubtitle: {
-    marginTop: 8,
-    maxWidth: 260,
-    color: "rgba(236, 242, 255, 0.82)",
-    fontFamily: KindraFonts.body,
+    marginTop: 6,
+    color: SoulSyncTheme.onDarkMuted,
     fontSize: 13,
     lineHeight: 19,
+    fontFamily: "Inter_500Medium",
   },
-  sectionBlock: {
-    marginBottom: 14,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    color: KindraColors.text,
-    fontFamily: KindraFonts.bodyBold,
-    fontSize: 15,
-  },
-  sectionAction: {
-    color: KindraColors.primaryMid,
-    fontFamily: KindraFonts.bodyMedium,
-    fontSize: 12,
-  },
-  newMatchesRow: {
-    gap: 12,
-    paddingRight: 8,
-  },
-  newMatchCard: {
-    width: 112,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: KindraColors.border,
-    backgroundColor: "rgba(15, 23, 42, 0.92)",
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    alignItems: "center",
-    ...KindraShadow,
-  },
-  newAvatarWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: 1,
-    borderColor: "rgba(75, 149, 255, 0.42)",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  newAvatarCore: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  newAvatarText: {
-    color: KindraColors.white,
-    fontFamily: KindraFonts.heading,
-    fontSize: 26,
-  },
-  newBadge: {
-    position: "absolute",
-    right: -7,
-    top: -4,
-    borderRadius: 999,
-    backgroundColor: "#2E72F3",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  newBadgeText: {
-    color: KindraColors.white,
-    fontFamily: KindraFonts.bodyBold,
-    fontSize: 9,
-  },
-  newMatchName: {
-    marginTop: 10,
-    color: KindraColors.text,
-    fontFamily: KindraFonts.bodyBold,
-    fontSize: 13,
-  },
-  newMatchVibe: {
-    marginTop: 2,
-    color: KindraColors.textMuted,
-    fontFamily: KindraFonts.body,
-    fontSize: 11,
-  },
-  pulseCard: {
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: KindraColors.border,
-    backgroundColor: "rgba(15, 23, 42, 0.95)",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 14,
-    overflow: "hidden",
-  },
-  pulseRadarRing: {
-    position: "absolute",
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    top: -102,
-    right: -56,
-    borderWidth: 1,
-    borderColor: "rgba(75, 149, 255, 0.35)",
-  },
-  pulseTopRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  pulseTitle: {
-    color: KindraColors.text,
-    fontFamily: KindraFonts.bodyBold,
-    fontSize: 14,
-  },
-  pulseMeta: {
-    color: KindraColors.primaryMid,
-    fontFamily: KindraFonts.bodyMedium,
-    fontSize: 11,
-  },
-  pulseBars: {
+  badgesRow: {
     marginTop: 12,
     flexDirection: "row",
-    alignItems: "flex-end",
+    gap: 10,
+  },
+  counterBadge: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    backgroundColor: "rgba(229,57,53,0.16)",
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
-  pulseBar: {
-    width: 11,
-    borderRadius: 6,
-    backgroundColor: "rgba(75, 149, 255, 0.88)",
+  counterValue: {
+    color: SoulSyncTheme.onDark,
+    fontSize: 13,
+    fontFamily: "Inter_700Bold",
   },
-  conversationCard: {
-    backgroundColor: KindraColors.card,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: KindraColors.border,
+  counterText: {
+    color: SoulSyncTheme.onDark,
+    opacity: 0.88,
+    fontSize: 12,
+    fontFamily: "Inter_500Medium",
+  },
+  sparkRow: {
+    gap: 10,
+    paddingRight: 6,
+    marginBottom: 14,
+  },
+  sparkCard: {
+    width: 96,
+    borderRadius: 20,
+    backgroundColor: SoulSyncTheme.card,
     paddingVertical: 12,
-    paddingHorizontal: 12,
-    flexDirection: "row",
+    paddingHorizontal: 10,
     alignItems: "center",
-    ...KindraShadow,
-    position: "relative",
+    ...SoulCardShadow,
   },
-  unreadBar: {
-    position: "absolute",
-    left: 0,
-    top: 10,
-    bottom: 10,
-    width: 3,
-    borderTopRightRadius: 3,
-    borderBottomRightRadius: 3,
-    backgroundColor: KindraColors.primaryMid,
-  },
-  rowAvatarWrap: {
-    marginRight: 10,
-  },
-  rowAvatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+  sparkAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: SoulSyncTheme.red,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(62, 141, 255, 0.22)",
+  },
+  sparkAvatarText: {
+    color: "#FFF",
+    fontSize: 18,
+    fontFamily: "Inter_700Bold",
+  },
+  sparkName: {
+    marginTop: 8,
+    color: SoulSyncTheme.ink,
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+  },
+  sparkVibe: {
+    marginTop: 2,
+    color: SoulSyncTheme.inkMuted,
+    fontSize: 11,
+    fontFamily: "Inter_500Medium",
+  },
+  sparkScore: {
+    marginTop: 6,
+    color: SoulSyncTheme.red,
+    fontSize: 12,
+    fontFamily: "Inter_700Bold",
+  },
+  filterRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 10,
+  },
+  filterChip: {
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderWidth: 1,
-    borderColor: "rgba(75, 149, 255, 0.35)",
+    borderColor: "rgba(229,57,53,0.35)",
+    backgroundColor: "rgba(246,242,238,0.94)",
   },
-  rowAvatarText: {
-    color: KindraColors.white,
-    fontFamily: KindraFonts.heading,
-    fontSize: 24,
+  filterChipActive: {
+    backgroundColor: SoulSyncTheme.red,
+    borderColor: SoulSyncTheme.red,
   },
-  messageCol: {
+  filterText: {
+    color: SoulSyncTheme.red,
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+  },
+  filterTextActive: {
+    color: "#FFF",
+  },
+  matchCard: {
+    borderRadius: 22,
+    backgroundColor: SoulSyncTheme.card,
+    padding: 14,
+    ...SoulCardShadow,
+  },
+  cardTopRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  avatarWrap: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: SoulSyncTheme.red,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+  avatarText: {
+    color: "#FFF",
+    fontSize: 18,
+    fontFamily: "Inter_700Bold",
+  },
+  cardMain: {
     flex: 1,
+    paddingRight: 8,
+  },
+  name: {
+    color: SoulSyncTheme.ink,
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
+  },
+  note: {
+    marginTop: 4,
+    color: SoulSyncTheme.inkMuted,
+    fontSize: 12,
+    lineHeight: 17,
+    fontFamily: "Inter_500Medium",
+  },
+  rightCol: {
+    alignItems: "flex-end",
     gap: 4,
   },
-  nameRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
-  },
-  nameText: {
-    color: KindraColors.text,
-    fontFamily: KindraFonts.bodyMedium,
-    fontSize: 15,
-  },
-  nameUnread: {
-    fontFamily: KindraFonts.bodyBold,
-  },
-  energyPill: {
+  scorePill: {
     borderRadius: 999,
-    backgroundColor: "rgba(62, 141, 255, 0.18)",
+    backgroundColor: "rgba(229,57,53,0.14)",
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+  },
+  scoreText: {
+    color: SoulSyncTheme.red,
+    fontSize: 12,
+    fontFamily: "Inter_700Bold",
+  },
+  statusText: {
+    color: SoulSyncTheme.inkMuted,
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+  },
+  cardActions: {
+    marginTop: 12,
+    flexDirection: "row",
+    gap: 8,
+  },
+  ghostButton: {
+    flex: 1,
+    minHeight: 40,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: "rgba(62, 141, 255, 0.35)",
-    paddingHorizontal: 7,
-    paddingVertical: 3,
+    borderColor: "rgba(229,57,53,0.3)",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 6,
+    backgroundColor: "rgba(255,255,255,0.72)",
   },
-  energyText: {
-    color: KindraColors.primaryLight,
-    fontFamily: KindraFonts.bodyMedium,
-    fontSize: 10,
-  },
-  previewText: {
-    color: KindraColors.textSecondary,
-    fontFamily: KindraFonts.body,
+  ghostButtonText: {
+    color: SoulSyncTheme.red,
     fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
   },
-  metaCol: {
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    minHeight: 44,
+  primaryButton: {
+    flex: 1,
+    minHeight: 40,
+    borderRadius: 14,
+    backgroundColor: SoulSyncTheme.red,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 6,
   },
-  timeText: {
-    color: KindraColors.textMuted,
-    fontFamily: KindraFonts.body,
-    fontSize: 11,
-  },
-  compatibilityText: {
-    marginTop: 4,
-    color: KindraColors.primaryMid,
-    fontFamily: KindraFonts.bodyBold,
-    fontSize: 11,
-  },
-  unreadDot: {
-    marginTop: 5,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: KindraColors.primaryMid,
+  primaryButtonText: {
+    color: "#FFF",
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
   },
 });

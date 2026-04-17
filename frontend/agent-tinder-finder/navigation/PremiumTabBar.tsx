@@ -11,8 +11,6 @@ import Animated, {
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { KindraColors, KindraFonts } from "@/constants/kindraTheme";
-
 type TabMeta = {
   key: string;
   label: string;
@@ -24,6 +22,14 @@ const tabMeta: Record<string, TabMeta> = {
   matches: { key: "matches", label: "Matches", icon: "heart" },
   chat: { key: "chat", label: "Chat", icon: "chatbubbles" },
   profile: { key: "profile", label: "Profile", icon: "person" },
+};
+
+const SoulTheme = {
+  red: "#E53935",
+  navBg: "#161616",
+  navBorder: "rgba(255,255,255,0.08)",
+  textInactive: "rgba(246,242,238,0.6)",
+  textActive: "#FFFFFF",
 };
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -52,7 +58,7 @@ function TabItem({
 
   const activeStyle = useAnimatedStyle(() => ({
     opacity: indicator.value,
-    transform: [{ scaleX: 0.7 + indicator.value * 0.3 }],
+    transform: [{ scaleX: 0.75 + indicator.value * 0.25 }],
   }));
 
   const labelStyle = useAnimatedStyle(() => ({
@@ -72,7 +78,7 @@ function TabItem({
     >
       <Ionicons
         name={active ? `${icon}` : `${icon}-outline`}
-        color={active ? KindraColors.primaryMid : KindraColors.textMuted}
+        color={active ? SoulTheme.textActive : SoulTheme.textInactive}
         size={22}
       />
       <Animated.View style={[styles.activeDot, activeStyle]} />
@@ -136,21 +142,21 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: KindraColors.card,
+    backgroundColor: SoulTheme.navBg,
     borderTopWidth: 1,
-    borderTopColor: KindraColors.border,
-    shadowColor: "#15344f",
-    shadowOpacity: 0.08,
+    borderTopColor: SoulTheme.navBorder,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: -2 },
   },
   navInner: {
-    height: 64,
+    height: 68,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
     paddingTop: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
   },
   item: {
     alignItems: "center",
@@ -160,27 +166,26 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   activeDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: KindraColors.primaryMid,
-    marginTop: 4,
+    width: 20,
+    height: 4,
+    borderRadius: 99,
+    backgroundColor: SoulTheme.red,
+    marginTop: 6,
     marginBottom: 4,
-    shadowColor: KindraColors.primaryMid,
-    shadowOpacity: 0.3,
+    shadowColor: SoulTheme.red,
+    shadowOpacity: 0.35,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 0 },
   },
   label: {
     fontSize: 11,
-    fontFamily: KindraFonts.bodyMedium,
+    fontFamily: "Inter_600SemiBold",
     lineHeight: 14,
   },
   labelActive: {
-    color: KindraColors.primaryMid,
-    fontFamily: KindraFonts.bodyBold,
+    color: SoulTheme.textActive,
   },
   labelInactive: {
-    color: KindraColors.textMuted,
+    color: SoulTheme.textInactive,
   },
 });
