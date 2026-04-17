@@ -1,8 +1,14 @@
 import json
+import os
 from typing import Any, Dict, List
 
 from agent_backend.crew import create_personality_crew, get_personality_agent_config
-from agent_backend.llm_runtime import enable_crewai_tracking, run_prompt_with_fallback
+from agent_backend.llm_runtime import (
+    enable_crewai_tracking,
+    get_model_candidates,
+    is_high_demand_error,
+    run_prompt_with_fallback,
+)
 from agent_backend.models import BehaviorUpdateResult, ChatTurnResult, PersonalityRunResult
 from agent_backend.parsers import extract_json_object, extract_questions
 from agent_backend.prompts import (
@@ -11,6 +17,58 @@ from agent_backend.prompts import (
     ONBOARDING_QUESTION_PROMPT,
     QUESTION_GENERATION_PROMPT,
 )
+
+
+def _run_personality_crew_with_fallback(questionnaire_json: str, thread_id: str | None = None):
+    candidates = get_model_candidates()
+    last_error: Exception | None = None
+
+    for model_idx, model in enumerate(candidates):
+        previous_model = os.getenv("MODEL")
+        if model:
+            os.environ["MODEL"] = model
+
+        try:
+            if model_idx > 0:
+                print(f"\n[Fallback] Switching personality crew to model: {model}")
+            
+            crew_instance = create_personality_crew()
+            enable_crewai_tracking(crew_instance)
+            opik_args = {"trace": {"thread_id": thread_id}} if thread_id else None
+
+            output = crew_instance.kickoff(
+                inputs={"questionnaire_json": questionnaire_json},
+                opik_args=opik_args,
+            )
+
+            raw = getattr(output, "raw", None)
+            if raw is None:
+                raw = str(output)
+
+            if model_idx > 0:
+                print(f"✓ Fallback model {model} crew succeeded!")
+            return raw
+        except Exception as exc:  # noqa: BLE001
+            last_error = exc
+            if not is_high_demand_error(exc):
+                # Non-transient error - stop trying other models
+                print(f"\n[Error] Non-transient error with {model}: {str(exc)[:100]}")
+                break
+            elif model_idx == 0:
+                # First model failed - try fallbacks
+                print(f"\n[Retry] Model {model} is overloaded. Trying fallback models...")
+            else:
+                # Fallback also failed
+                print(f"\n[Skip] Fallback model {model} also overloaded.")
+        finally:
+            if previous_model is None:
+                os.environ.pop("MODEL", None)
+            else:
+                os.environ["MODEL"] = previous_model
+
+    if last_error is not None:
+        raise last_error
+    raise RuntimeError("Personality crew failed without a captured exception.")
 
 
 def run_personality_question_generator(question_count: int = 12) -> List[Dict[str, str]]:
@@ -112,18 +170,7 @@ def run_personality_agent(
     thread_id: str | None = None,
 ) -> PersonalityRunResult:
     try:
-        crew_instance = create_personality_crew()
-        enable_crewai_tracking(crew_instance)
-        opik_args = {"trace": {"thread_id": thread_id}} if thread_id else None
-
-        output = crew_instance.kickoff(
-            inputs={"questionnaire_json": questionnaire_json},
-            opik_args=opik_args,
-        )
-
-        raw = getattr(output, "raw", None)
-        if raw is None:
-            raw = str(output)
+        raw = _run_personality_crew_with_fallback(questionnaire_json, thread_id=thread_id)
 
         return PersonalityRunResult(
             raw_output=raw,

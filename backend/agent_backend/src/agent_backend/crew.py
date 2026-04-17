@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -5,6 +6,11 @@ import yaml
 from crewai import Agent, Crew, Process, Task
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from crewai.project import CrewBase, agent, crew, task
+
+
+def get_runtime_llm() -> str | None:
+    model = (os.getenv("MODEL", "") or "").strip()
+    return model or None
 
 
 @CrewBase
@@ -21,6 +27,7 @@ class AgentBackend:
     def personality_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["personality_agent"],
+            llm=get_runtime_llm(),
             verbose=True,
         )
 
@@ -28,6 +35,7 @@ class AgentBackend:
     def matching_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["matching_agent"],
+            llm=get_runtime_llm(),
             verbose=True,
         )
 
@@ -35,6 +43,7 @@ class AgentBackend:
     def conversation_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["conversation_agent"],
+            llm=get_runtime_llm(),
             verbose=True,
         )
 
@@ -42,6 +51,7 @@ class AgentBackend:
     def evaluation_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["evaluation_agent"],
+            llm=get_runtime_llm(),
             verbose=True,
         )
 
@@ -75,6 +85,7 @@ class MatchingAgent:
     def personality_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["personality_agent"],
+            llm=get_runtime_llm(),
             verbose=True,
         )
 
@@ -82,6 +93,7 @@ class MatchingAgent:
     def matching_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["matching_agent"],
+            llm=get_runtime_llm(),
             verbose=True,
         )
 
@@ -89,6 +101,7 @@ class MatchingAgent:
     def conversation_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["conversation_agent"],
+            llm=get_runtime_llm(),
             verbose=True,
         )
 
@@ -96,6 +109,7 @@ class MatchingAgent:
     def evaluation_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["evaluation_agent"],
+            llm=get_runtime_llm(),
             verbose=True,
         )
 
