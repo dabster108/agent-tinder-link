@@ -36,9 +36,16 @@ def run_prompt_with_fallback(prompt: str, agent_config: Dict[str, Any]) -> str:
     max_retries = max(1, int(os.getenv("SOULSYNC_LLM_RETRIES", "3")))
     last_error: Exception | None = None
 
-    for model in candidates:
-        for attempt in range(1, max_retries + 1):
+    for model_idx, model in enumerate(candidates):
+        attempts_for_this_model = 1 if model_idx > 0 else max_retries  # First model: retry multiple times. Fallback models: try once.
+        
+        for attempt in range(1, attempts_for_this_model + 1):
             try:
+                if attempt > 1:
+                    print(f"\n[Retry] Attempt {attempt}/{attempts_for_this_model} with model: {model}")
+                elif model_idx > 0:
+                    print(f"\n[Fallback] Switching to model: {model}")
+                
                 lite_agent = Agent(
                     config=agent_config,
                     llm=model,
@@ -48,12 +55,24 @@ def run_prompt_with_fallback(prompt: str, agent_config: Dict[str, Any]) -> str:
                 raw = getattr(output, "raw", None)
                 if raw is None:
                     raw = str(output)
+                
+                if model_idx > 0:
+                    print(f"✓ Fallback model {model} succeeded!")
                 return raw
+                
             except Exception as exc:  # noqa: BLE001
                 last_error = exc
-                if is_high_demand_error(exc) and attempt < max_retries:
-                    time.sleep(min(2**attempt, 6))
-                    continue
+                if is_high_demand_error(exc):
+                    if model_idx == 0:  # First model - retry a few times
+                        if attempt < max_retries:
+                            wait_time = min(2**attempt, 6)
+                            print(f"\n⚠️  Model {model} is under high demand. Retrying in {wait_time}s (attempt {attempt}/{max_retries})...")
+                            time.sleep(wait_time)
+                            continue
+                        else:
+                            print(f"\n[Switch] Model {model} remains overloaded. Trying fallback models...")
+                    else:  # Fallback model - don't retry, just move to next
+                        print(f"\n[Skip] Fallback model {model} also overloaded. Moving on...")
                 break
 
     if last_error is not None:

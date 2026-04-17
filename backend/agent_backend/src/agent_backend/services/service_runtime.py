@@ -43,7 +43,6 @@ def _is_quota_or_rate_limit_error(exc: Exception) -> bool:
         or "resource_exhausted" in message
         or "rate limit" in message
         or "too many requests" in message
-        or "high demand" in message
     )
 
 
