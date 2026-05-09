@@ -21,20 +21,14 @@ export default function SplashScreenRoute() {
 
   const pulse = useSharedValue(1);
   const glow = useSharedValue(0.5);
-  const progress = useSharedValue(0);
+  const rotate = useSharedValue(0);
   const float = useSharedValue(0);
 
   React.useEffect(() => {
     pulse.value = withRepeat(
       withSequence(
-        withTiming(1.12, {
-          duration: 900,
-          easing: Easing.out(Easing.quad),
-        }),
-        withTiming(0.98, {
-          duration: 900,
-          easing: Easing.in(Easing.quad),
-        }),
+        withTiming(1.12, { duration: 900, easing: Easing.out(Easing.quad) }),
+        withTiming(0.98, { duration: 900, easing: Easing.in(Easing.quad) }),
       ),
       -1,
       false,
@@ -42,14 +36,8 @@ export default function SplashScreenRoute() {
 
     glow.value = withRepeat(
       withSequence(
-        withTiming(0.95, {
-          duration: 980,
-          easing: Easing.inOut(Easing.quad),
-        }),
-        withTiming(0.42, {
-          duration: 980,
-          easing: Easing.inOut(Easing.quad),
-        }),
+        withTiming(0.95, { duration: 980, easing: Easing.inOut(Easing.quad) }),
+        withTiming(0.42, { duration: 980, easing: Easing.inOut(Easing.quad) }),
       ),
       -1,
       false,
@@ -57,23 +45,19 @@ export default function SplashScreenRoute() {
 
     float.value = withRepeat(
       withSequence(
-        withTiming(1, {
-          duration: 1600,
-          easing: Easing.inOut(Easing.quad),
-        }),
-        withTiming(0, {
-          duration: 1600,
-          easing: Easing.inOut(Easing.quad),
-        }),
+        withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.quad) }),
+        withTiming(0, { duration: 1600, easing: Easing.inOut(Easing.quad) }),
       ),
       -1,
       false,
     );
 
-    progress.value = withTiming(1, {
-      duration: 2200,
-      easing: Easing.out(Easing.cubic),
-    });
+    // rotate spinner continuously
+    rotate.value = withRepeat(
+      withTiming(360, { duration: 1400, easing: Easing.linear }),
+      -1,
+      false,
+    );
   }, [float, glow, progress, pulse]);
 
   React.useEffect(() => {
@@ -98,36 +82,32 @@ export default function SplashScreenRoute() {
     opacity: 0.4 + progress.value * 0.6,
   }));
 
-  return (
-    <LinearGradient
-      colors={["#0E0E0E", "#141212", "#1E1211", "#2B0F0F"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.root}
-    >
-      <View style={styles.bgShapeTop} />
-      <View style={styles.bgShapeBottom} />
+  const spinnerStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotate.value}deg` }],
+    opacity: 0.95,
+  }));
 
-      <Animated.View entering={FadeIn.duration(560)} style={styles.centerWrap}>
+  return (
+    <View style={[styles.root, styles.rootWhite]}>
+      <Animated.View entering={FadeIn.duration(420)} style={styles.centerWrap}>
         <Animated.View style={[styles.halo, haloStyle]} />
+
         <Animated.View style={[styles.logoOrb, pulseStyle]}>
           <Text style={styles.logoLetter}>S</Text>
         </Animated.View>
 
+        <Animated.View style={[styles.spinnerRing, spinnerStyle]}>
+          <View style={styles.spinnerArc} />
+        </Animated.View>
+
         <Animated.Text
-          entering={FadeInDown.delay(80).duration(540)}
-          style={styles.brand}
+          entering={FadeInDown.delay(80).duration(420)}
+          style={styles.brandDark}
         >
           SoulSync
         </Animated.Text>
-
-        <View style={styles.loaderWrap}>
-          <View style={styles.loaderTrack}>
-            <Animated.View style={[styles.loaderFill, progressStyle]} />
-          </View>
-        </View>
       </Animated.View>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -207,5 +187,33 @@ const styles = StyleSheet.create({
     height: "100%",
     borderRadius: 99,
     backgroundColor: "#E53935",
+  },
+  rootWhite: {
+    backgroundColor: "#FFFFFF",
+  },
+  brandDark: {
+    marginTop: 14,
+    color: "#111111",
+    fontSize: 28,
+    letterSpacing: 0.2,
+    fontFamily: "Inter_800ExtraBold",
+  },
+  spinnerRing: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 12,
+  },
+  spinnerArc: {
+    position: "absolute",
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 6,
+    borderColor: "rgba(229,57,53,0.08)",
+    borderLeftColor: "rgba(229,57,53,0.9)",
+    transform: [{ rotate: "45deg" }],
   },
 });
