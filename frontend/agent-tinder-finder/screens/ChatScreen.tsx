@@ -30,6 +30,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { SoulCardShadow, SoulSyncTheme } from "@/constants/soulSyncTheme";
+import AnimationPresets from "@/constants/animationPresets";
 
 type Message = {
   id: string;
@@ -76,8 +77,14 @@ export default function ChatScreen() {
   React.useEffect(() => {
     glow.value = withRepeat(
       withSequence(
-        withTiming(1, { duration: 2200, easing: Easing.inOut(Easing.quad) }),
-        withTiming(0, { duration: 2200, easing: Easing.inOut(Easing.quad) }),
+        withTiming(1, {
+          duration: AnimationPresets.duration.extraLong,
+          easing: AnimationPresets.easing.standard,
+        }),
+        withTiming(0, {
+          duration: AnimationPresets.duration.extraLong,
+          easing: AnimationPresets.easing.standard,
+        }),
       ),
       -1,
       false,
@@ -121,8 +128,8 @@ export default function ChatScreen() {
 
     onPressAny();
     sendScale.value = withSequence(
-      withSpring(0.92, { damping: 14, stiffness: 320 }),
-      withSpring(1, { damping: 14, stiffness: 320 }),
+      withSpring(0.92, AnimationPresets.spring.default),
+      withSpring(1, AnimationPresets.spring.default),
     );
 
     setMessages((prev) => [

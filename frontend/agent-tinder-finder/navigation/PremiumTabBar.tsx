@@ -8,6 +8,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import AnimationPresets from "@/constants/animationPresets";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -52,7 +53,10 @@ function TabItem({
   const indicator = useSharedValue(active ? 1 : 0);
 
   React.useEffect(() => {
-    indicator.value = withTiming(active ? 1 : 0, { duration: 220 });
+    indicator.value = withTiming(active ? 1 : 0, {
+      duration: AnimationPresets.duration.short,
+      easing: AnimationPresets.easing.standard as any,
+    });
   }, [active, indicator]);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -68,10 +72,10 @@ function TabItem({
     <AnimatedPressable
       onPress={onPress}
       onPressIn={() => {
-        press.value = withSpring(0.96, { damping: 15, stiffness: 300 });
+        press.value = withSpring(0.96, AnimationPresets.spring.soft);
       }}
       onPressOut={() => {
-        press.value = withSpring(1, { damping: 15, stiffness: 300 });
+        press.value = withSpring(1, AnimationPresets.spring.soft);
       }}
       style={[styles.item, animatedStyle]}
     >
@@ -96,10 +100,10 @@ function CenterAction({ onPress }: { onPress: () => void }) {
     <AnimatedPressable
       onPress={onPress}
       onPressIn={() => {
-        press.value = withSpring(0.94, { damping: 15, stiffness: 300 });
+        press.value = withSpring(0.94, AnimationPresets.spring.soft);
       }}
       onPressOut={() => {
-        press.value = withSpring(1, { damping: 15, stiffness: 300 });
+        press.value = withSpring(1, AnimationPresets.spring.soft);
       }}
       style={[styles.fab, animatedStyle]}
     >
