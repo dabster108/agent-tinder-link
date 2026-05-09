@@ -38,6 +38,8 @@ import {
   KindraShadow,
 } from "@/constants/kindraTheme";
 
+import AnimationPresets from "@/constants/animationPresets";
+
 type MatchCard = {
   id: string;
   name: string;
@@ -248,8 +250,14 @@ export default function HomeScreen() {
   // Compatibility pulse: play on mount
   React.useEffect(() => {
     compatPulse.value = withSequence(
-      withTiming(1, { duration: 420, easing: Easing.out(Easing.quad) }),
-      withTiming(0, { duration: 560, easing: Easing.in(Easing.quad) }),
+      withTiming(1, {
+        duration: AnimationPresets.duration.pulse,
+        easing: AnimationPresets.easing.softOut,
+      }),
+      withTiming(0, {
+        duration: AnimationPresets.duration.medium,
+        easing: AnimationPresets.easing.softIn,
+      }),
     );
   }, [compatPulse]);
 
@@ -265,8 +273,8 @@ export default function HomeScreen() {
     if (delta > 6 && !scrollCooldown.current) {
       scrollCooldown.current = true;
       compatPulse.value = withSequence(
-        withTiming(1, { duration: 300 }),
-        withTiming(0, { duration: 500 }),
+        withTiming(1, { duration: AnimationPresets.duration.short, easing: AnimationPresets.easing.standard }),
+        withTiming(0, { duration: AnimationPresets.duration.long, easing: AnimationPresets.easing.standard }),
       );
       setTimeout(() => (scrollCooldown.current = false), 900);
     }
