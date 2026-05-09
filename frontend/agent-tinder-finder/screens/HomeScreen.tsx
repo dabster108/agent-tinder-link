@@ -9,6 +9,9 @@ import {
   Text,
   useWindowDimensions,
   View,
+  ScrollView,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from "react-native";
 import {
   Gesture,
@@ -193,6 +196,7 @@ export default function HomeScreen() {
   const heroDrift = useSharedValue(0);
   const deckBreath = useSharedValue(0);
   const chipFloat = useSharedValue(0);
+  const compatPulse = useSharedValue(0);
 
   React.useEffect(() => {
     heroDrift.value = withRepeat(
@@ -240,6 +244,39 @@ export default function HomeScreen() {
       false,
     );
   }, [chipFloat, deckBreath, heroDrift]);
+
+  // Compatibility pulse: play on mount
+  React.useEffect(() => {
+    compatPulse.value = withSequence(
+      withTiming(1, { duration: 420, easing: Easing.out(Easing.quad) }),
+      withTiming(0, { duration: 560, easing: Easing.in(Easing.quad) }),
+    );
+  }, [compatPulse]);
+
+  const prevScrollY = React.useRef(0);
+  const scrollCooldown = React.useRef(false);
+
+  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const y = e.nativeEvent.contentOffset.y;
+    const delta = y - prevScrollY.current;
+    prevScrollY.current = y;
+
+    // If scrolling down and not recently triggered, show pulse
+    if (delta > 6 && !scrollCooldown.current) {
+      scrollCooldown.current = true;
+      compatPulse.value = withSequence(
+        withTiming(1, { duration: 300 }),
+        withTiming(0, { duration: 500 }),
+      );
+      setTimeout(() => (scrollCooldown.current = false), 900);
+    }
+  };
+
+  const [showSwipeHint, setShowSwipeHint] = React.useState(true);
+  React.useEffect(() => {
+    const id = setTimeout(() => setShowSwipeHint(false), 3000);
+    return () => clearTimeout(id);
+  }, []);
 
   const advance = React.useCallback(() => {
     setIndex((value) => (value + 1) % CARDS.length);
@@ -381,10 +418,24 @@ export default function HomeScreen() {
     transform: [{ translateY: -1 + chipFloat.value * 2 }],
   }));
 
+  const compatPulseStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: 0.9 + compatPulse.value * 0.6 },
+      { translateY: -8 * compatPulse.value },
+    ],
+    opacity: compatPulse.value * 0.9,
+  }));
+
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaView edges={["top"]} style={styles.safeArea}>
-        <View style={styles.header}>
+        <ScrollView
+          style={styles.safeScroll}
+          contentContainerStyle={{ flexGrow: 1 }}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+        >
+          <View style={styles.header}>
           <View style={styles.heroGlowLeft} />
           <View style={styles.heroGlowRight} />
 
@@ -464,11 +515,12 @@ export default function HomeScreen() {
           </Animated.View>
         </View>
 
-        <Animated.View
-          entering={FadeInUp.delay(240).duration(520)}
-          style={styles.body}
-        >
+          <Animated.View
+            entering={FadeInUp.delay(240).duration(520)}
+            style={styles.body}
+          >
           <View style={styles.deckWrap}>
+            <Animated.View style={[styles.compatPulse, compatPulseStyle]} />
             <Animated.View style={[styles.deckAura, deckAuraStyle]} />
 
             <Animated.View style={[styles.card, styles.backCard, backStyle]}>
@@ -496,6 +548,12 @@ export default function HomeScreen() {
               </View>
             ) : null}
           </View>
+
+          {showSwipeHint ? (
+            <Animated.View style={styles.swipeHintPill} pointerEvents="none">
+              <Text style={styles.swipeHintText}>Swipe right to like • left to pass</Text>
+            </Animated.View>
+          ) : null}
 
           <Animated.View style={[styles.actionsRow, actionsRowStyle]}>
             <ScalePressable
@@ -827,5 +885,35 @@ const styles = StyleSheet.create({
     width: 58,
     height: 58,
     backgroundColor: "rgba(62, 141, 255, 0.16)",
+  },
+  compatPulse: {
+    position: "absolute",
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: "rgba(26,188,156,0.08)",
+    alignSelf: "center",
+    top: 40,
+    zIndex: 0,
+  },
+  safeScroll: {
+    flex: 1,
+    backgroundColor: KindraColors.background,
+  },
+  swipeHintPill: {
+    alignSelf: "center",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    marginTop: 6,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.06)",
+  },
+  swipeHintText: {
+    color: KindraColors.white,
+    fontSize: 13,
+    fontFamily: KindraFonts.bodyMedium,
   },
 });
