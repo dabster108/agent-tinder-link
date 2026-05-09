@@ -160,11 +160,11 @@ export default function ChatScreen() {
 
       <Animated.View style={[styles.glow, glowStyle]} />
 
-      <SafeAreaView edges={["top"]} style={styles.safeArea}>
+      <SafeAreaView edges={["top", "bottom"]} style={styles.safeArea}>
         <KeyboardAvoidingView
           style={styles.flex}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 8 : 0}
+          keyboardVerticalOffset={Platform.OS === "ios" ? tabBarHeight + 12 : 0}
         >
           <Animated.View
             entering={FadeInDown.duration(420)}
@@ -263,16 +263,23 @@ export default function ChatScreen() {
 
           <View
             style={[
-              styles.composerWrap,
-              {
-                paddingBottom: Math.max(insets.bottom, 10),
-                marginBottom: tabBarHeight + 4,
-              },
+              styles.composerWrapAbsolute,
+              // PremiumTabBar's inner height is 94; ensure composer clears it.
+              // Add extra spacing so the composer doesn't touch the nav bar.
+              { bottom: Math.max(insets.bottom, tabBarHeight, 94) + 28 },
             ]}
           >
             <Animated.View style={styles.composerCard}>
               <Pressable style={styles.attachButton} onPress={onPressAny}>
                 <Ionicons name="add" size={18} color={SoulSyncTheme.red} />
+              </Pressable>
+
+              <Pressable style={styles.cameraButton} onPress={onPressAny}>
+                <Ionicons
+                  name="camera-outline"
+                  size={18}
+                  color={SoulSyncTheme.ink}
+                />
               </Pressable>
 
               <TextInput
@@ -448,6 +455,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
     ...SoulCardShadow,
+    zIndex: 50,
+    elevation: 20,
   },
   attachButton: {
     width: 34,
@@ -456,6 +465,20 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(229,57,53,0.12)",
     alignItems: "center",
     justifyContent: "center",
+  },
+  cameraButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.02)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  composerWrapAbsolute: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    paddingHorizontal: 0,
   },
   input: {
     flex: 1,
