@@ -1,6 +1,5 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import Animated, {
   Easing,
@@ -23,6 +22,7 @@ export default function SplashScreenRoute() {
   const glow = useSharedValue(0.5);
   const rotate = useSharedValue(0);
   const float = useSharedValue(0);
+  const progress = useSharedValue(0);
 
   React.useEffect(() => {
     pulse.value = withRepeat(
@@ -52,13 +52,18 @@ export default function SplashScreenRoute() {
       false,
     );
 
+    progress.value = withTiming(1, {
+      duration: 2200,
+      easing: Easing.out(Easing.quad),
+    });
+
     // rotate spinner continuously
     rotate.value = withRepeat(
       withTiming(360, { duration: 1400, easing: Easing.linear }),
       -1,
       false,
     );
-  }, [float, glow, progress, pulse]);
+  }, [float, glow, progress, pulse, rotate]);
 
   React.useEffect(() => {
     const timeout = setTimeout(() => {
@@ -106,6 +111,12 @@ export default function SplashScreenRoute() {
         >
           SoulSync
         </Animated.Text>
+
+        <View style={styles.loaderWrap}>
+          <View style={styles.loaderTrack}>
+            <Animated.View style={[styles.loaderFill, progressStyle]} />
+          </View>
+        </View>
       </Animated.View>
     </View>
   );
