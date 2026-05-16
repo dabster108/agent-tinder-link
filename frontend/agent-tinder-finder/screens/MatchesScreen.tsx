@@ -44,6 +44,19 @@ type MatchItem = {
   avatar: string;
 };
 
+type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
+
+const STATUS_META: Record<
+  MatchItem["status"],
+  {
+    icon: IoniconName;
+  }
+> = {
+  Ready: { icon: "checkmark-circle" },
+  New: { icon: "sparkles" },
+  Challenge: { icon: "alert-circle" },
+};
+
 const SPARKS: Spark[] = [
   { id: "s1", name: "Mira", vibe: "Intentional", score: 96, avatar: "M" },
   { id: "s2", name: "Rohan", vibe: "Playful", score: 91, avatar: "R" },
@@ -152,6 +165,16 @@ export default function MatchesScreen() {
     return MATCHES.filter((item) => item.status === "Challenge");
   }, [activeFilter]);
 
+  const statusCounts = React.useMemo(() => {
+    return MATCHES.reduce(
+      (acc, item) => {
+        acc[item.status] += 1;
+        return acc;
+      },
+      { Ready: 0, New: 0, Challenge: 0 } as Record<MatchItem["status"], number>,
+    );
+  }, []);
+
   const onPressAny = React.useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
@@ -173,6 +196,17 @@ export default function MatchesScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <Animated.View entering={FadeInUp.duration(280)}>
+              <View style={styles.emptyCard}>
+                <Text style={styles.emptyTitle}>Nothing here yet</Text>
+                <Text style={styles.emptySubtitle}>
+                  Try another filter — your agent will keep refreshing the
+                  queue.
+                </Text>
+              </View>
+            </Animated.View>
+          }
           ListHeaderComponent={
             <View>
               <Animated.View
@@ -220,6 +254,29 @@ export default function MatchesScreen() {
                     </ScaleCard>
                   ))}
                 </ScrollView>
+              </Animated.View>
+
+              <Animated.View
+                entering={FadeInUp.delay(80).duration(420)}
+                style={styles.statsRow}
+              >
+                {(Object.keys(STATUS_META) as Array<MatchItem["status"]>).map(
+                  (status) => (
+                    <View key={status} style={styles.statCard}>
+                      <View style={styles.statIconWrap}>
+                        <Ionicons
+                          name={STATUS_META[status].icon}
+                          size={14}
+                          color={SoulSyncTheme.red}
+                        />
+                      </View>
+                      <Text style={styles.statValue}>
+                        {statusCounts[status]}
+                      </Text>
+                      <Text style={styles.statLabel}>{status}</Text>
+                    </View>
+                  ),
+                )}
               </Animated.View>
 
               <Animated.View
@@ -273,7 +330,22 @@ export default function MatchesScreen() {
                     <View style={styles.scorePill}>
                       <Text style={styles.scoreText}>{item.score}%</Text>
                     </View>
-                    <Text style={styles.statusText}>{item.status}</Text>
+                    <View
+                      style={[
+                        styles.statusPill,
+                        item.status === "Ready" && styles.statusPillReady,
+                        item.status === "New" && styles.statusPillNew,
+                        item.status === "Challenge" &&
+                          styles.statusPillChallenge,
+                      ]}
+                    >
+                      <Ionicons
+                        name={STATUS_META[item.status].icon}
+                        size={12}
+                        color={SoulSyncTheme.red}
+                      />
+                      <Text style={styles.statusPillText}>{item.status}</Text>
+                    </View>
                   </View>
                 </View>
 
@@ -381,6 +453,39 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingRight: 6,
     marginBottom: 14,
+  },
+  statsRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 14,
+  },
+  statCard: {
+    flex: 1,
+    borderRadius: 20,
+    backgroundColor: SoulSyncTheme.card,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    ...SoulCardShadow,
+  },
+  statIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 10,
+    backgroundColor: "rgba(229,57,53,0.12)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  statValue: {
+    marginTop: 10,
+    color: SoulSyncTheme.ink,
+    fontSize: 18,
+    fontFamily: "Inter_800ExtraBold",
+  },
+  statLabel: {
+    marginTop: 2,
+    color: SoulSyncTheme.inkMuted,
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
   },
   sparkCard: {
     width: 96,
@@ -502,10 +607,48 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Inter_700Bold",
   },
-  statusText: {
-    color: SoulSyncTheme.inkMuted,
+  statusPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderWidth: 1,
+    borderColor: "rgba(229,57,53,0.22)",
+    backgroundColor: "rgba(229,57,53,0.10)",
+  },
+  statusPillReady: {
+    backgroundColor: "rgba(229,57,53,0.10)",
+  },
+  statusPillNew: {
+    backgroundColor: "rgba(229,57,53,0.14)",
+  },
+  statusPillChallenge: {
+    backgroundColor: "rgba(229,57,53,0.08)",
+  },
+  statusPillText: {
+    color: SoulSyncTheme.red,
     fontSize: 11,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Inter_700Bold",
+  },
+  emptyCard: {
+    borderRadius: 22,
+    backgroundColor: SoulSyncTheme.card,
+    padding: 16,
+    ...SoulCardShadow,
+  },
+  emptyTitle: {
+    color: SoulSyncTheme.ink,
+    fontSize: 16,
+    fontFamily: "Inter_800ExtraBold",
+  },
+  emptySubtitle: {
+    marginTop: 6,
+    color: SoulSyncTheme.inkMuted,
+    fontSize: 12,
+    lineHeight: 18,
+    fontFamily: "Inter_500Medium",
   },
   cardActions: {
     marginTop: 12,
