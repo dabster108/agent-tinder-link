@@ -1,5 +1,6 @@
 import React from "react";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
@@ -58,6 +59,12 @@ const INITIAL_MESSAGES: Message[] = [
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function ChatScreen() {
+  const params = useLocalSearchParams<{
+    userId?: string;
+    userName?: string;
+    userAvatar?: string;
+  }>();
+
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
 
@@ -72,6 +79,15 @@ export default function ChatScreen() {
   const sendScale = useSharedValue(1);
 
   const canSend = draft.trim().length > 0;
+
+  const userName =
+    typeof params.userName === "string" && params.userName.trim().length > 0
+      ? params.userName
+      : "Mira";
+  const userAvatar =
+    typeof params.userAvatar === "string" && params.userAvatar.trim().length > 0
+      ? params.userAvatar
+      : userName.charAt(0).toUpperCase();
 
   React.useEffect(() => {
     glow.value = withRepeat(
@@ -186,10 +202,10 @@ export default function ChatScreen() {
 
             <View style={styles.headerCenter}>
               <View style={styles.avatarWrap}>
-                <Text style={styles.avatarText}>M</Text>
+                <Text style={styles.avatarText}>{userAvatar}</Text>
               </View>
               <View>
-                <Text style={styles.headerName}>Mira</Text>
+                <Text style={styles.headerName}>{userName}</Text>
                 <Text style={styles.headerStatus}>Active now</Text>
               </View>
             </View>

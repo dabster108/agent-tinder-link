@@ -25,7 +25,7 @@ const tabMeta: Record<string, TabMeta> = {
   profile: { key: "profile", label: "Profile", icon: "person" },
 };
 
-const tabOrder = ["index", "profile", "chat", "matches"] as const;
+const tabOrder = ["index", "matches", "chat", "profile"] as const;
 
 const SoulTheme = {
   red: "#F22D3D",
