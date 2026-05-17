@@ -174,7 +174,7 @@ export default function ChatScreen() {
   return (
     <View style={styles.root}>
       <LinearGradient
-        colors={[SoulSyncTheme.canvas, SoulSyncTheme.canvasAlt, "#1A1312"]}
+        colors={[SoulSyncTheme.canvas, SoulSyncTheme.canvasAlt, "#1B2430"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
@@ -225,6 +225,9 @@ export default function ChatScreen() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.messagesContent}
             showsVerticalScrollIndicator={false}
+            decelerationRate="fast"
+            bounces
+            scrollEventThrottle={16}
             ListHeaderComponent={
               <Animated.View entering={FadeInUp.delay(60).duration(360)}>
                 <View style={styles.dayChip}>
@@ -350,18 +353,20 @@ const styles = StyleSheet.create({
   },
   glow: {
     position: "absolute",
-    top: -120,
-    right: -80,
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: "rgba(229,57,53,0.24)",
+    top: -110,
+    right: -70,
+    width: 290,
+    height: 290,
+    borderRadius: 145,
+    backgroundColor: "rgba(255,92,77,0.28)",
   },
   headerCard: {
     marginHorizontal: 16,
     marginTop: 8,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.07)",
+    borderRadius: 22,
+    backgroundColor: "rgba(243,248,255,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(243,248,255,0.16)",
     paddingHorizontal: 12,
     paddingVertical: 10,
     flexDirection: "row",
@@ -374,7 +379,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.1)",
+    backgroundColor: "rgba(243,248,255,0.12)",
   },
   headerCenter: {
     flexDirection: "row",
@@ -382,45 +387,45 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   avatarWrap: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: SoulSyncTheme.red,
+    width: 40,
+    height: 40,
+    borderRadius: 13,
+    backgroundColor: "#FF7B61",
     alignItems: "center",
     justifyContent: "center",
   },
   avatarText: {
     color: "#FFF",
     fontSize: 16,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "DMSans_700Bold",
   },
   headerName: {
     color: SoulSyncTheme.onDark,
-    fontSize: 14,
-    fontFamily: "Inter_700Bold",
+    fontSize: 15,
+    fontFamily: "DMSans_700Bold",
   },
   headerStatus: {
     color: SoulSyncTheme.onDarkMuted,
     fontSize: 11,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "DMSans_500Medium",
   },
   messagesContent: {
     paddingHorizontal: 16,
-    paddingTop: 14,
+    paddingTop: 16,
     paddingBottom: 12,
-    gap: 10,
+    gap: 12,
   },
   dayChip: {
     alignSelf: "center",
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: "rgba(246,242,238,0.9)",
+    backgroundColor: "rgba(244,247,251,0.92)",
   },
   dayChipText: {
     color: SoulSyncTheme.inkMuted,
     fontSize: 11,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "DMSans_700Bold",
   },
   messageRow: {
     marginTop: 8,
@@ -434,21 +439,23 @@ const styles = StyleSheet.create({
   },
   bubble: {
     maxWidth: "84%",
-    borderRadius: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderRadius: 20,
+    paddingHorizontal: 13,
+    paddingVertical: 11,
   },
   sentBubble: {
     backgroundColor: SoulSyncTheme.red,
   },
   receivedBubble: {
-    backgroundColor: SoulSyncTheme.card,
+    backgroundColor: SoulSyncTheme.cardSoft,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.7)",
     ...SoulCardShadow,
   },
   messageText: {
     fontSize: 14,
-    lineHeight: 19,
-    fontFamily: "Inter_500Medium",
+    lineHeight: 20,
+    fontFamily: "DMSans_500Medium",
   },
   sentText: {
     color: "#FFF",
@@ -462,17 +469,19 @@ const styles = StyleSheet.create({
   typingText: {
     color: SoulSyncTheme.inkMuted,
     fontSize: 13,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "DMSans_500Medium",
   },
   composerWrap: {
     paddingHorizontal: 16,
     paddingTop: 6,
   },
   composerCard: {
-    borderRadius: 18,
-    backgroundColor: SoulSyncTheme.card,
-    minHeight: 56,
-    paddingHorizontal: 10,
+    borderRadius: 20,
+    backgroundColor: SoulSyncTheme.cardSoft,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.8)",
+    minHeight: 58,
+    paddingHorizontal: 11,
     alignItems: "center",
     flexDirection: "row",
     gap: 8,
@@ -484,7 +493,7 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 12,
-    backgroundColor: "rgba(229,57,53,0.12)",
+    backgroundColor: "rgba(255,92,77,0.14)",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -492,7 +501,7 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.02)",
+    backgroundColor: "rgba(15,23,34,0.08)",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -505,8 +514,8 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     color: SoulSyncTheme.ink,
-    fontSize: 14,
-    fontFamily: "Inter_500Medium",
+    fontSize: 15,
+    fontFamily: "DMSans_500Medium",
     paddingVertical: 10,
   },
   sendButton: {

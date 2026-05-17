@@ -28,12 +28,12 @@ const tabMeta: Record<string, TabMeta> = {
 const tabOrder = ["index", "matches", "chat", "profile"] as const;
 
 const SoulTheme = {
-  red: "#F22D3D",
-  redDeep: "#D91E2E",
-  navBg: "#F22D3D",
-  navShadow: "rgba(242, 45, 61, 0.4)",
-  textInactive: "rgba(255,255,255,0.82)",
-  textActive: "#FFFFFF",
+  red: "#FF5C4D",
+  redDeep: "#E64537",
+  navBg: "rgba(9, 13, 18, 0.93)",
+  navShadow: "rgba(9, 13, 18, 0.44)",
+  textInactive: "rgba(210,225,244,0.72)",
+  textActive: "#F3F8FF",
 };
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -80,10 +80,13 @@ function TabItem({
       style={[styles.item, animatedStyle]}
     >
       <Ionicons
-        name={active ? `${icon}` : `${icon}-outline`}
+        name={icon}
         color={active ? SoulTheme.textActive : SoulTheme.textInactive}
-        size={24}
+        size={22}
       />
+      <Text style={[styles.itemLabel, active && styles.itemLabelActive]}>
+        {label}
+      </Text>
       <Animated.View style={[styles.activeDot, activeStyle]} />
     </AnimatedPressable>
   );
@@ -217,6 +220,8 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 12,
     backgroundColor: SoulTheme.navBg,
+    borderWidth: 1,
+    borderColor: "rgba(243,248,255,0.14)",
     borderRadius: 30,
     shadowColor: SoulTheme.navShadow,
     shadowOpacity: 1,
@@ -229,6 +234,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flex: 1,
     paddingTop: 4,
+  },
+  itemLabel: {
+    marginTop: 4,
+    fontSize: 10,
+    color: SoulTheme.textInactive,
+    fontFamily: "DMSans_700Bold",
+  },
+  itemLabelActive: {
+    color: SoulTheme.textActive,
   },
   activeDot: {
     width: 7,
@@ -245,14 +259,14 @@ const styles = StyleSheet.create({
     marginTop: -28,
   },
   fab: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 62,
+    height: 62,
+    borderRadius: 31,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: SoulTheme.redDeep,
     borderWidth: 6,
-    borderColor: "rgba(255,255,255,0.96)",
+    borderColor: "rgba(243,248,255,0.96)",
     shadowColor: "#000000",
     shadowOpacity: 0.28,
     shadowRadius: 14,
