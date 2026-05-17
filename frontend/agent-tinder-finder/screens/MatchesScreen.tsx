@@ -1,4 +1,5 @@
 import React from "react";
+import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
@@ -136,6 +137,7 @@ function ScaleCard({
 }
 
 export default function MatchesScreen() {
+  const router = useRouter();
   const [activeFilter, setActiveFilter] = React.useState<FilterValue>("All");
   const pulse = useSharedValue(0);
 
@@ -178,6 +180,21 @@ export default function MatchesScreen() {
   const onPressAny = React.useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
+
+  const onStartChat = React.useCallback(
+    (item: MatchItem) => {
+      onPressAny();
+      router.push({
+        pathname: "/(tabs)/chat",
+        params: {
+          userId: item.id,
+          userName: item.name,
+          userAvatar: item.avatar,
+        },
+      });
+    },
+    [onPressAny, router],
+  );
 
   return (
     <View style={styles.root}>
@@ -359,7 +376,10 @@ export default function MatchesScreen() {
                     <Text style={styles.ghostButtonText}>Notes</Text>
                   </Pressable>
 
-                  <Pressable style={styles.primaryButton} onPress={onPressAny}>
+                  <Pressable
+                    style={styles.primaryButton}
+                    onPress={() => onStartChat(item)}
+                  >
                     <Ionicons
                       name="chatbubble-ellipses"
                       size={15}
