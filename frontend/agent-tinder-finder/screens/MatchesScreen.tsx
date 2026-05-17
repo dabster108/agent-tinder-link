@@ -199,7 +199,7 @@ export default function MatchesScreen() {
   return (
     <View style={styles.root}>
       <LinearGradient
-        colors={[SoulSyncTheme.canvas, SoulSyncTheme.canvasAlt, "#1A1312"]}
+        colors={[SoulSyncTheme.canvas, SoulSyncTheme.canvasAlt, "#1C2430"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
@@ -213,6 +213,11 @@ export default function MatchesScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
+          decelerationRate="fast"
+          bounces
+          scrollEventThrottle={16}
+          initialNumToRender={6}
+          maxToRenderPerBatch={8}
           ListEmptyComponent={
             <Animated.View entering={FadeInUp.duration(280)}>
               <View style={styles.emptyCard}>
@@ -277,7 +282,7 @@ export default function MatchesScreen() {
                 entering={FadeInUp.delay(80).duration(420)}
                 style={styles.statsRow}
               >
-                {(Object.keys(STATUS_META) as Array<MatchItem["status"]>).map(
+                {(Object.keys(STATUS_META) as MatchItem["status"][]).map(
                   (status) => (
                     <View key={status} style={styles.statCard}>
                       <View style={styles.statIconWrap}>
@@ -408,52 +413,57 @@ const styles = StyleSheet.create({
   },
   glow: {
     position: "absolute",
-    top: -120,
-    right: -80,
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: "rgba(229,57,53,0.24)",
+    top: -110,
+    right: -70,
+    width: 290,
+    height: 290,
+    borderRadius: 145,
+    backgroundColor: "rgba(255,92,77,0.28)",
   },
   content: {
     paddingHorizontal: 16,
     paddingTop: 8,
-    paddingBottom: 120,
+    paddingBottom: 136,
   },
   hero: {
-    borderRadius: 22,
-    backgroundColor: "rgba(255,255,255,0.06)",
-    padding: 16,
-    marginBottom: 14,
+    borderRadius: 28,
+    backgroundColor: "rgba(243,248,255,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(243,248,255,0.16)",
+    padding: 18,
+    marginBottom: 16,
   },
   heroBrand: {
-    color: SoulSyncTheme.red,
-    fontSize: 14,
-    fontFamily: "Inter_700Bold",
+    color: "#9CC4FF",
+    fontSize: 13,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    fontFamily: "DMSans_700Bold",
   },
   heroTitle: {
     marginTop: 6,
     color: SoulSyncTheme.onDark,
-    fontSize: 28,
-    fontFamily: "Inter_800ExtraBold",
+    fontSize: 34,
+    lineHeight: 40,
+    fontFamily: "DMSerifDisplay_400Regular",
   },
   heroSubtitle: {
     marginTop: 6,
     color: SoulSyncTheme.onDarkMuted,
-    fontSize: 13,
-    lineHeight: 19,
-    fontFamily: "Inter_500Medium",
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: "DMSans_500Medium",
   },
   badgesRow: {
-    marginTop: 12,
+    marginTop: 14,
     flexDirection: "row",
     gap: 10,
   },
   counterBadge: {
     borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    backgroundColor: "rgba(229,57,53,0.16)",
+    paddingHorizontal: 13,
+    paddingVertical: 8,
+    backgroundColor: "rgba(157,194,255,0.16)",
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
@@ -461,13 +471,13 @@ const styles = StyleSheet.create({
   counterValue: {
     color: SoulSyncTheme.onDark,
     fontSize: 13,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "DMSans_700Bold",
   },
   counterText: {
     color: SoulSyncTheme.onDark,
     opacity: 0.88,
     fontSize: 12,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "DMSans_500Medium",
   },
   sparkRow: {
     gap: 10,
@@ -481,9 +491,11 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    borderRadius: 20,
-    backgroundColor: SoulSyncTheme.card,
-    paddingVertical: 12,
+    borderRadius: 22,
+    backgroundColor: SoulSyncTheme.cardSoft,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.7)",
+    paddingVertical: 13,
     paddingHorizontal: 12,
     ...SoulCardShadow,
   },
@@ -491,7 +503,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 10,
-    backgroundColor: "rgba(229,57,53,0.12)",
+    backgroundColor: "rgba(255,92,77,0.14)",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -499,18 +511,20 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: SoulSyncTheme.ink,
     fontSize: 18,
-    fontFamily: "Inter_800ExtraBold",
+    fontFamily: "DMSans_700Bold",
   },
   statLabel: {
     marginTop: 2,
     color: SoulSyncTheme.inkMuted,
     fontSize: 12,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "DMSans_500Medium",
   },
   sparkCard: {
     width: 96,
-    borderRadius: 20,
-    backgroundColor: SoulSyncTheme.card,
+    borderRadius: 22,
+    backgroundColor: SoulSyncTheme.cardSoft,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.7)",
     paddingVertical: 12,
     paddingHorizontal: 10,
     alignItems: "center",
@@ -520,32 +534,32 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: SoulSyncTheme.red,
+    backgroundColor: "#FF7B61",
     alignItems: "center",
     justifyContent: "center",
   },
   sparkAvatarText: {
     color: "#FFF",
     fontSize: 18,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "DMSans_700Bold",
   },
   sparkName: {
     marginTop: 8,
     color: SoulSyncTheme.ink,
     fontSize: 13,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "DMSans_700Bold",
   },
   sparkVibe: {
     marginTop: 2,
     color: SoulSyncTheme.inkMuted,
     fontSize: 11,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "DMSans_500Medium",
   },
   sparkScore: {
     marginTop: 6,
     color: SoulSyncTheme.red,
     fontSize: 12,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "DMSans_700Bold",
   },
   filterRow: {
     flexDirection: "row",
@@ -557,25 +571,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: "rgba(229,57,53,0.35)",
-    backgroundColor: "rgba(246,242,238,0.94)",
+    borderColor: "rgba(130,155,184,0.42)",
+    backgroundColor: "rgba(244,247,251,0.94)",
   },
   filterChipActive: {
-    backgroundColor: SoulSyncTheme.red,
-    borderColor: SoulSyncTheme.red,
+    backgroundColor: SoulSyncTheme.ink,
+    borderColor: SoulSyncTheme.ink,
   },
   filterText: {
-    color: SoulSyncTheme.red,
+    color: SoulSyncTheme.ink,
     fontSize: 13,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "DMSans_700Bold",
   },
   filterTextActive: {
     color: "#FFF",
   },
   matchCard: {
-    borderRadius: 22,
-    backgroundColor: SoulSyncTheme.card,
-    padding: 14,
+    borderRadius: 24,
+    backgroundColor: SoulSyncTheme.cardSoft,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.72)",
+    padding: 15,
     ...SoulCardShadow,
   },
   cardTopRow: {
@@ -586,7 +602,7 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 14,
-    backgroundColor: SoulSyncTheme.red,
+    backgroundColor: "#FF7B61",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
@@ -594,7 +610,7 @@ const styles = StyleSheet.create({
   avatarText: {
     color: "#FFF",
     fontSize: 18,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "DMSans_700Bold",
   },
   cardMain: {
     flex: 1,
@@ -602,15 +618,15 @@ const styles = StyleSheet.create({
   },
   name: {
     color: SoulSyncTheme.ink,
-    fontSize: 16,
-    fontFamily: "Inter_700Bold",
+    fontSize: 17,
+    fontFamily: "DMSans_700Bold",
   },
   note: {
     marginTop: 4,
     color: SoulSyncTheme.inkMuted,
     fontSize: 12,
-    lineHeight: 17,
-    fontFamily: "Inter_500Medium",
+    lineHeight: 18,
+    fontFamily: "DMSans_500Medium",
   },
   rightCol: {
     alignItems: "flex-end",
@@ -618,14 +634,14 @@ const styles = StyleSheet.create({
   },
   scorePill: {
     borderRadius: 999,
-    backgroundColor: "rgba(229,57,53,0.14)",
+    backgroundColor: "rgba(255,92,77,0.14)",
     paddingHorizontal: 9,
     paddingVertical: 5,
   },
   scoreText: {
     color: SoulSyncTheme.red,
     fontSize: 12,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "DMSans_700Bold",
   },
   statusPill: {
     flexDirection: "row",
@@ -635,8 +651,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 5,
     borderWidth: 1,
-    borderColor: "rgba(229,57,53,0.22)",
-    backgroundColor: "rgba(229,57,53,0.10)",
+    borderColor: "rgba(255,92,77,0.24)",
+    backgroundColor: "rgba(255,92,77,0.10)",
   },
   statusPillReady: {
     backgroundColor: "rgba(229,57,53,0.10)",
@@ -650,25 +666,27 @@ const styles = StyleSheet.create({
   statusPillText: {
     color: SoulSyncTheme.red,
     fontSize: 11,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "DMSans_700Bold",
   },
   emptyCard: {
-    borderRadius: 22,
-    backgroundColor: SoulSyncTheme.card,
+    borderRadius: 24,
+    backgroundColor: SoulSyncTheme.cardSoft,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.7)",
     padding: 16,
     ...SoulCardShadow,
   },
   emptyTitle: {
     color: SoulSyncTheme.ink,
     fontSize: 16,
-    fontFamily: "Inter_800ExtraBold",
+    fontFamily: "DMSans_700Bold",
   },
   emptySubtitle: {
     marginTop: 6,
     color: SoulSyncTheme.inkMuted,
     fontSize: 12,
     lineHeight: 18,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "DMSans_500Medium",
   },
   cardActions: {
     marginTop: 12,
@@ -677,25 +695,25 @@ const styles = StyleSheet.create({
   },
   ghostButton: {
     flex: 1,
-    minHeight: 40,
-    borderRadius: 14,
+    minHeight: 42,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: "rgba(229,57,53,0.3)",
+    borderColor: "rgba(130,155,184,0.35)",
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
     gap: 6,
-    backgroundColor: "rgba(255,255,255,0.72)",
+    backgroundColor: "rgba(255,255,255,0.84)",
   },
   ghostButtonText: {
-    color: SoulSyncTheme.red,
+    color: SoulSyncTheme.ink,
     fontSize: 13,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "DMSans_700Bold",
   },
   primaryButton: {
     flex: 1,
-    minHeight: 40,
-    borderRadius: 14,
+    minHeight: 42,
+    borderRadius: 16,
     backgroundColor: SoulSyncTheme.red,
     alignItems: "center",
     justifyContent: "center",
@@ -705,6 +723,6 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: "#FFF",
     fontSize: 13,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "DMSans_700Bold",
   },
 });
